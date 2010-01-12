@@ -1,4 +1,3 @@
-/Hello World/
 
 # Assignment:
 number: 42

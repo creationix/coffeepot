@@ -104,7 +104,7 @@ tokenize: source =>
     [type, match, consume] = match_token(source.substr(pos, length))
     tokens.push([type, match])
     pos += match.length
-  tokens
+  analyse(tokens)
 
 # Take a raw token stream and strip out unneeded whitespace tokens and insert
 # indent/dedent tokens. By using a stack of indentation levels, we can support
@@ -154,15 +154,11 @@ analyse: tokens =>
 
   result
 
-File.read('../test/indent.coffee').addCallback() coffee =>
+
+
+File.read('../test/sample.coffee').addCallback() coffee =>
   # puts("\nCoffeeScript\n")
   # puts(coffee)
   puts("\nTokens\n")
   puts(inspect(tokens: tokenize(coffee)))
-  puts("\nTokens Cleaned\n")
-  puts(inspect(tokens2: analyse(tokens)))
-  puts(inspect({
-    tokens: tokens.length
-    tokens2: tokens2.length
-  }))
 
