@@ -149,6 +149,9 @@ analyse: tokens =>
   while stack.length > 1
     result.push(["DEDENT", stack.pop()])
 
+  # Tack on tail to make parsing easier
+  result.push(["END", ""])
+
   result
 
 File.read('../test/indent.coffee').addCallback() coffee =>
