@@ -57,9 +57,7 @@ Tokens: {
     else
       {"1":code.substr(0, pos)}
 
-  # We're really cheating here.  Just JSON parse the partial string over and
-  # over till it comes back successful.  It would probably be faster to
-  # implement our own state machine, but this works for now and is very safe.
+  # Parse strings using a simple state machine
   STRING: code =>
     quote: code[0]
     return null unless quote == "\"" or quote == "\'"
@@ -67,11 +65,11 @@ Tokens: {
     len: code.length + 1
     done: false
     while not done and pos < len
-      try
-        JSON.parse(code.substr(0, pos))
+      if code[pos] == quote
         done: true
-      catch e
+      if code[pos] == "\\"
         pos++
+      pos++
     if pos >= len
       null
     else
