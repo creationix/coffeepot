@@ -57,6 +57,24 @@ Tokens: {
     else
       {"1":code.substr(0, pos)}
 
+  # Parse heredoc strings using a simple state machine
+  HEREDOC: code =>
+    if !(slice: code.match(/^("""|''')/))
+      return null
+    slice: slice[1]
+    pos: 3
+    len: code.length + 1
+    done: false
+    while not done and pos < len
+      if code.substr(pos, 3) == slice
+        done: true
+        pos += 2
+      pos++
+    if pos >= len
+      null
+    else
+      {"1":code.substr(0, pos)}
+
   # Parse strings using a simple state machine
   STRING: code =>
     quote: code[0]
