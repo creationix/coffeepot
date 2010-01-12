@@ -39,6 +39,24 @@ Tokens: {
     if not isNaN(num: parseInt(code) || parseFloat(code))
       {"1": num + ""}
 
+  # Embedded raw JavaScript
+  RAW: code =>
+    if code[0] != "`"
+      return null
+    pos: 1
+    len: code.length + 1
+    done: false
+    while not done and pos < len
+      if code[pos] == "`"
+        done: true
+      if code[pos] == "\\"
+        pos++
+      pos++
+    if pos >= len
+      null
+    else
+      {"1":code.substr(0, pos)}
+
   # We're really cheating here.  Just JSON parse the partial string over and
   # over till it comes back successful.  It would probably be faster to
   # implement our own state machine, but this works for now and is very safe.
