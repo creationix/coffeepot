@@ -8,8 +8,8 @@
     NEWLINE: /^(\n)/,
     WS: /^([ \t]+)/,
     COMMENT: /^(#.*)\n?/,
-    ID: /^([a-z_][a-z0-9_]*)/i,
-    PROPERTY: /^(\.[a-z_][a-z0-9_]*)/i,
+    ID: /^([a-z_$][a-z0-9_$]*)/i,
+    PROPERTY: /^(\.[a-z_$][a-z0-9_$]*)/i,
     COLON: /^(:)/,
     ROCKET: /^(=>)/,
     OPERATOR: /^([+\*&|\/\-%=<>:!]+)/,
@@ -17,6 +17,7 @@
     PAREN: /^([\(\)])/,
     COMMA: /^(,)/,
     DOTDOTDOT: /^(\.\.\.)/,
+    DOTDOT: /^(\.\.)/,
     EXISTENTIAL: /^(\?)/,
     // A little cheating to keep from having to write a proper number parser
     NUMBER: function NUMBER(code) {
@@ -29,9 +30,48 @@
       } : null;
       return NUMBER === this.constructor ? this : __a;
     },
-    // We're really cheating here.  Just JSON parse the partial string over and
-    // over till it comes back successful.  It would probably be faster to
-    // implement our own state machine, but this works for now and is very safe.
+    // Embedded raw JavaScript
+    RAW: function RAW(code) {
+      var __a, done, len, pos;
+      if (code[0] !== "`") {
+        return null;
+      }
+      pos = 1;
+      len = code.length + 1;
+      done = false;
+      while (!done && pos < len) {
+        code[pos] === "`" ? done = true : null;
+        code[pos] === "\\" ? pos++ : null;
+        pos++;
+      }
+      __a = pos >= len ? null : {
+        "1": code.substr(0, pos)
+      };
+      return RAW === this.constructor ? this : __a;
+    },
+    // Parse heredoc strings using a simple state machine
+    HEREDOC: function HEREDOC(code) {
+      var __a, done, len, pos, slice;
+      if (!(slice = code.match(/^("""|''')/))) {
+        return null;
+      }
+      slice = slice[1];
+      pos = 3;
+      len = code.length + 1;
+      done = false;
+      while (!done && pos < len) {
+        if (code.substr(pos, 3) === slice) {
+          done = true;
+          pos += 2;
+        }
+        pos++;
+      }
+      __a = pos >= len ? null : {
+        "1": code.substr(0, pos)
+      };
+      return HEREDOC === this.constructor ? this : __a;
+    },
+    // Parse strings using a simple state machine
     STRING: function STRING(code) {
       var __a, done, len, pos, quote;
       quote = code[0];
@@ -42,12 +82,9 @@
       len = code.length + 1;
       done = false;
       while (!done && pos < len) {
-        try {
-          JSON.parse(code.substr(0, pos));
-          done = true;
-        } catch (e) {
-          pos++;
-        }
+        code[pos] === quote ? done = true : null;
+        code[pos] === "\\" ? pos++ : null;
+        pos++;
       }
       __a = pos >= len ? null : {
         "1": code.substr(0, pos)
