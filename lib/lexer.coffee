@@ -1,5 +1,7 @@
 CoffeeScript: {}
 
+CoffeeScript: exports if exports
+
 # The lexer reads a stream of CoffeeScript and divvys it up into tagged
 # tokens. A minor bit of the ambiguity in the grammar has been avoided by
 # pushing some extra smarts into the Lexer.
@@ -50,10 +52,10 @@ CoffeeScript.Lexer: =>
     ')', '++', '--', ']', '}'
     "FALSE", "NULL", "THIS", "TRUE"
   ]
-  
+
   # Scan by attempting to match tokens one character at a time. Slow and steady.
   this.tokenize: code =>
-    
+
     this.code: code.trim() # Cleanup code by remove extra line breaks
     this.i: 0              # Current character position we're parsing
     this.line: 1           # The current line.
@@ -61,12 +63,12 @@ CoffeeScript.Lexer: =>
     this.indents: []       # The stack of all indent levels we are currently within.
     this.tokens: []        # Collection of all parsed tokens in the form [:TOKEN_TYPE, value]
     while this.i < this.code.length
-      this.chunk: this.code[this.i..-1]
+      this.chunk: this.code.substr(this.i, 1)
       this.extract_next_token()
 
     # TODO: translate this somehow
     # puts "original stream: #{@tokens.inspect}" if ENV['VERBOSE']
-    
+
     this.close_indentation()
     (new Rewriter()).rewrite(this.tokens)
 
@@ -89,24 +91,24 @@ CoffeeScript.Lexer: =>
 
   # Matches identifying literals: variables, keywords, method names, etc.
   this.identifier_token: =>
-    return false unless identifier: match_token(IDENTIFIER)
+    return false unless identifier: this.match_token(IDENTIFIER)
     # Keywords are special identifiers tagged with their own name,
     # 'if' will result in an [:IF, "if"] token.
     tag: if KEYWORDS.indexOf(identifier) >= 0 then identifier.toUpperCase() else "IDENTIFIER"
     tag: "LEADING_WHEN" if tag == "WHEN" and ["OUTDENT", "INDENT", "\n"].indexOf(last_tag) >= 0
-    this.tokens[-1][0]: "PROPERTY_ACCESS" if tag == "IDENTIFIER" and last_value == '.' and !(this.tokens[-2][1] == '.')
+    this.tokens[-1][0]: "PROPERTY_ACCESS" if tag == "IDENTIFIER" and this.last_value() == '.' and !(this.tokens[-2][1] == '.')
     this.token(tag, identifier)
     this.i += identifier.length
 
   # Matches numbers, including decimals, hex, and exponential notation.
   this.number_token: =>
-   return false unless number: match_token(IDENTIFIER)
+   return false unless number: this.match_token(IDENTIFIER)
    this.token("NUMBER", number)
    this.i += number.length
 
   # Matches strings, including multi-line strings.
   this.string_token: =>
-    return false unless string: match_token(STRING)
+    return false unless string: this.match_token(STRING)
     escaped: string.replace(MULTILINER) match =>
       this.line += 1
       " \\\n"
@@ -115,13 +117,13 @@ CoffeeScript.Lexer: =>
 
   # Matches interpolated JavaScript.
   this.js_token: =>
-    return false unless script: match_token(JS)
+    return false unless script: this.match_token(JS)
     this.token("JS", script.replace(JS_CLEANER, ''))
     this.i += script.length
 
   # Matches regular expression literals.
   this.regex_token: =>
-    return false unless regex: match_token(REGEX)
+    return false unless regex: this.match_token(REGEX)
     return false if NOT_REGEX.indexOf(last_tag) >= 0
     this.token("REGEX", regex)
     this.i += regex.length
@@ -129,19 +131,18 @@ CoffeeScript.Lexer: =>
 
   # Matches and consumes comments.
   this.comment_token: =>
-    return false unless comment: match_token(COMMENT)
-    this.line += comment.match(MULTILINER).length
+    return false unless comment: this.match_token(COMMENT)
+    this.line += if (match: comment.match(MULTILINER)) then match.length else 0
     this.token("COMMENT", comment.replace(COMMENT_CLEANER, '').split(MULTILINER))
     this.token("\n", "\n")
     this.i += comment.length
-  end
 
   # Record tokens for indentation differing from the previous line.
   this.indent_token: =>
-    return false unless indent: match_token(MULTI_DENT)
+    return false unless indent: this.match_token(MULTI_DENT)
     this.line += indent.match(MULTILINER).length
     this.i += indent.length
-    return suppress_newlines(indent) if last_value.match(NO_NEWLINE) and last_value != "=>"
+    return suppress_newlines(indent) if this.last_value().match(NO_NEWLINE) and this.last_value() != "=>"
     size: indent.match(LAST_DENT).pop().pop().length
     return newline_token(indent) if size == this.indent
     if size > this.indent
@@ -162,7 +163,7 @@ CoffeeScript.Lexer: =>
 
   # Matches and consumes non-meaningful whitespace.
   this.whitespace_token: =>
-    return false unless whitespace: match_token(WHITESPACE)
+    return false unless whitespace: this.match_token(WHITESPACE)
     this.i += whitespace.length
 
   # Multiple newlines get merged together.
@@ -226,3 +227,19 @@ CoffeeScript.Lexer: =>
   # axe it.
   this.close_indentation: =>
     this.outdent_token(this.indent)
+
+Value: value, length =>
+  this.match: =>
+    puts("TODO: Implement")
+
+
+# Read the script from the current file
+File: require('file')
+process.mixin(require('sys'))
+
+File.read('../test/sample.coffee').addCallback() coffee =>
+  lexer: new CoffeeScript.Lexer()
+  # puts("\nCoffeeScript\n")
+  # puts(coffee)
+  puts("\nTokens\n")
+  puts(inspect(lexer.tokenize(coffee)))
