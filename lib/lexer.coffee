@@ -22,6 +22,8 @@ Tokens: {
 
   # A little cheating to keep from having to write a proper number parser
   NUMBER: code =>
+    if !code[0].match(/[0-9.-]/)
+      return null
     if not isNaN(num: parseInt(code) || parseFloat(code))
       {"1": num + ""}
 
