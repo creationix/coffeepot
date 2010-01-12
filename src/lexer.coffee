@@ -1,6 +1,3 @@
-# Read the script from the current file
-File: require('file')
-process.mixin(require('sys'))
 
 Keywords: [
   "if", "else", "then", "unless"
@@ -154,11 +151,17 @@ analyse: tokens =>
 
   result
 
+# Works as CommonJS module too
+if `exports`
+  `exports.tokenize = tokenize`
 
-
-File.read('../test/sample.coffee').addCallback() coffee =>
-  # puts("\nCoffeeScript\n")
-  # puts(coffee)
-  puts("\nTokens\n")
-  puts(inspect(tokens: tokenize(coffee)))
-
+# # Read the script from the current file
+# File: require('file')
+# process.mixin(require('sys'))
+#
+# File.read('../test/sample.coffee').addCallback() coffee =>
+#   # puts("\nCoffeeScript\n")
+#   # puts(coffee)
+#   puts("\nTokens\n")
+#   puts(inspect(tokens: tokenize(coffee)))
+#
