@@ -7,7 +7,7 @@ process.mixin(require('sys'))
 Tokens: {
   NEWLINE: /^(\n)/
   WS: /^([ \t]+)/
-  COMMENT: /^(#.*)\n/
+  COMMENT: /^(#.*)\n?/
   IDENTIFIER: /^([a-z_][a-z0-9_]*)/i
   PROPERTY: /^(\.[a-z_][a-z0-9_]*)/i
   COLON: /^(:)/
@@ -79,6 +79,7 @@ match_token: code =>
     debug(inspect(tokens))
     throw new Error("Unknown Token: " + JSON.stringify(code.split("\n")[0]))
 
+# Turns a long string into a stream of tokens
 tokenize: source =>
   length: source.length
   pos: 0
@@ -88,9 +89,56 @@ tokenize: source =>
     pos += match.length
   tokens
 
-File.read('../test/sample.coffee').addCallback() coffee =>
+# Take a raw token stream and strip out unneeded whitespace tokens and insert # indent/dedent tokens. By using a stack of indentation levels, we can support
+# mixed spaces and tabs as long the programmer is consistent within blocks.
+analyse: tokens =>
+  last: null
+  result: []
+  stack: [""]
+  for token in tokens
+    if token[0] == "WS" and last and last[0] == "NEWLINE"
+      top: stack[stack.length - 1]
+      indent: token[1]
+
+      # Look for dedents
+      while indent.length < top.length
+        if indent != top.substr(0, indent.length)
+          throw new Error("Indentation mismatch")
+        result.push(["DEDENT", top])
+        stack.pop()
+        top: stack[stack.length - 1]
+
+      # Check for indents
+      if indent.length > top.length
+        if top != indent.substr(0, top.length)
+          throw new Error("Indentation mismatch")
+        result.push(["INDENT", indent])
+        stack.push(indent)
+
+      # Check for other possible mismatch
+      if indent.length == top.length && indent != top
+        throw new Error("Indentation mismatch")
+
+    # Strip out unwanted whitespace tokens
+    if !(token[0] == "WS" or (token[0] == "NEWLINE" && last[0] == "NEWLINE"))
+      result.push(token)
+      last: token
+
+  # Flush the stack
+  while stack.length > 1
+    result.push(["DEDENT", stack.pop()])
+
+  result
+
+File.read('../test/indent.coffee').addCallback() coffee =>
   # puts("\nCoffeeScript\n")
   # puts(coffee)
   puts("\nTokens\n")
-  puts(inspect(tokenize(coffee)))
+  puts(inspect(tokens: tokenize(coffee)))
+  puts("\nTokens Cleaned\n")
+  puts(inspect(tokens2: analyse(tokens)))
+  puts(inspect({
+    tokens: tokens.length
+    tokens2: tokens2.length
+  }))
 
