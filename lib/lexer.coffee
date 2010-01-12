@@ -3,7 +3,8 @@ File: require('file')
 process.mixin(require('sys'))
 
 # Remember that regular expressions are really functions, so for the special
-# cases where regular expressions aren't powerful enough, we can use a custom # function.
+# cases where regular expressions aren't powerful enough, we can use a custom
+# function.
 Tokens: {
   NEWLINE: /^(\n)/
   WS: /^([ \t]+)/
@@ -89,7 +90,8 @@ tokenize: source =>
     pos += match.length
   tokens
 
-# Take a raw token stream and strip out unneeded whitespace tokens and insert # indent/dedent tokens. By using a stack of indentation levels, we can support
+# Take a raw token stream and strip out unneeded whitespace tokens and insert
+# indent/dedent tokens. By using a stack of indentation levels, we can support
 # mixed spaces and tabs as long the programmer is consistent within blocks.
 analyse: tokens =>
   last: null
