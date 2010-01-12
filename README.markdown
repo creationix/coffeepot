@@ -7,3 +7,7 @@ http://jashkenas.github.com/coffee-script/
 This looks like a good start for writing a parser.
 
 http://inimino.org/~inimino/blog/peg_first_release
+
+This looks very promising.  If only I could get it to work command line.
+
+http://jscc.jmksf.com/
