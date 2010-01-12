@@ -20,8 +20,8 @@ Tokens: {
   NEWLINE: /^(\n)/
   WS: /^([ \t]+)/
   COMMENT: /^(#.*)\n?/
-  ID: /^([a-z_][a-z0-9_]*)/i
-  PROPERTY: /^(\.[a-z_][a-z0-9_]*)/i
+  ID: /^([a-z_$][a-z0-9_$]*)/i
+  PROPERTY: /^(\.[a-z_$][a-z0-9_$]*)/i
   COLON: /^(:)/
   ROCKET: /^(=>)/
   OPERATOR: /^([+\*&|\/\-%=<>:!]+)/
