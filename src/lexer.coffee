@@ -29,6 +29,7 @@ Tokens: {
   PAREN: /^([\(\)])/
   COMMA: /^(,)/
   DOTDOTDOT: /^(\.\.\.)/
+  DOTDOT: /^(\.\.)/
   EXISTENTIAL: /^(\?)/
 
   # A little cheating to keep from having to write a proper number parser
