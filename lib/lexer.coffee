@@ -2,6 +2,20 @@
 File: require('file')
 process.mixin(require('sys'))
 
+Keywords: [
+  "if", "else", "then", "unless"
+  "true", "false", "yes", "no", "on", "off"
+  "and", "or", "is", "isnt", "not"
+  "new", "return"
+  "try", "catch", "finally", "throw"
+  "break", "continue"
+  "for", "in", "of", "by", "where", "while"
+  "switch", "when"
+  "super", "extends"
+  "arguments"
+  "delete", "instanceof", "typeof"
+]
+
 # Remember that regular expressions are really functions, so for the special
 # cases where regular expressions aren't powerful enough, we can use a custom
 # function.
@@ -9,7 +23,7 @@ Tokens: {
   NEWLINE: /^(\n)/
   WS: /^([ \t]+)/
   COMMENT: /^(#.*)\n?/
-  IDENTIFIER: /^([a-z_][a-z0-9_]*)/i
+  ID: /^([a-z_][a-z0-9_]*)/i
   PROPERTY: /^(\.[a-z_][a-z0-9_]*)/i
   COLON: /^(:)/
   ROCKET: /^(=>)/
@@ -124,9 +138,12 @@ analyse: tokens =>
         throw new Error("Indentation mismatch")
 
     # Strip out unwanted whitespace tokens
-    if !(token[0] == "WS" or (token[0] == "NEWLINE" && last[0] == "NEWLINE"))
-      result.push(token)
-      last: token
+    if token[0] != "WS"
+      if !(token[0] == "NEWLINE" && (!last || last[0] == "NEWLINE"))
+        if token[0] == "ID" and Keywords.indexOf(token[1]) >= 0
+          token[0] = "KEYWORD"
+        result.push(token)
+        last: token
 
   # Flush the stack
   while stack.length > 1
