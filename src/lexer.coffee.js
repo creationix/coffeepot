@@ -1,6 +1,7 @@
 (function(){
-  var Keywords, Tokens, analyse, match_token, strip_heredoc, tokenize, tokens;
-  Keywords = ["if", "else", "then", "unless", "true", "false", "yes", "no", "on", "off", "and", "or", "is", "isnt", "not", "new", "return", "try", "catch", "finally", "throw", "break", "continue", "for", "in", "of", "by", "where", "while", "switch", "when", "super", "extends", "arguments", "var", "delete", "instanceof", "typeof"];
+  var Booleans, Keywords, Tokens, analyse, match_token, strip_heredoc, tokenize, tokens;
+  Booleans = ["true", "false", "yes", "no", "on", "off"];
+  Keywords = ["if", "else", "then", "unless", "and", "or", "is", "isnt", "not", "new", "return", "try", "catch", "finally", "throw", "break", "continue", "for", "in", "of", "by", "where", "while", "switch", "when", "super", "extends", "arguments", "var", "delete", "instanceof", "typeof"];
   // Remember that regular expressions are really functions, so for the special
   // cases where regular expressions aren't powerful enough, we can use a custom
   // function.
@@ -13,8 +14,7 @@
     COLON: /^(:)/,
     ROCKET: /^(=>)/,
     OPERATOR: /^([+\*&|\/\-%=<>:!]+)/,
-    BRACE: /^([\[\]\{\}])/,
-    PAREN: /^([\(\)])/,
+    GROUPING: /^([\(\)\[\]\{\}])/,
     COMMA: /^(,)/,
     DOTDOTDOT: /^(\.\.\.)/,
     DOTDOT: /^(\.\.)/,
@@ -168,7 +168,7 @@
   // indent/dedent tokens. By using a stack of indentation levels, we can support
   // mixed spaces and tabs as long the programmer is consistent within blocks.
   analyse = function analyse(tokens) {
-    var __a, __b, indent, last, result, stack, token, top;
+    var __a, __b, idx, indent, last, result, stack, token, top;
     last = null;
     result = [];
     stack = [""];
@@ -204,7 +204,14 @@
       if (token[0] !== "WS") {
         if (!(token[0] === "NEWLINE" && (!last || last[0] === "NEWLINE"))) {
           // Look for reserved identifiers and mark them
-          token[0] === "ID" && Keywords.indexOf(token[1]) >= 0 ? token[0] = "KEYWORD" : null;
+          if (token[0] === "ID") {
+            if (Keywords.indexOf(token[1]) >= 0) {
+              token[0] = "KEYWORD";
+            } else if ((idx = Booleans.indexOf(token[1])) >= 0) {
+              token[0] = "BOOLEAN";
+              token[1] = idx % 2 === 0;
+            }
+          }
           // Convert strings to their raw value
           if (token[0] === "STRING") {
             token[1] = token[1].replace(/\n/g, "\\n");

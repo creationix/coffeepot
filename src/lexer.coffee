@@ -1,7 +1,12 @@
 
+Booleans: [
+  "true", "false"
+  "yes", "no"
+  "on", "off"
+]
+
 Keywords: [
   "if", "else", "then", "unless"
-  "true", "false", "yes", "no", "on", "off"
   "and", "or", "is", "isnt", "not"
   "new", "return"
   "try", "catch", "finally", "throw"
@@ -25,8 +30,7 @@ Tokens: {
   COLON: /^(:)/
   ROCKET: /^(=>)/
   OPERATOR: /^([+\*&|\/\-%=<>:!]+)/
-  BRACE: /^([\[\]\{\}])/
-  PAREN: /^([\(\)])/
+  GROUPING: /^([\(\)\[\]\{\}])/
   COMMA: /^(,)/
   DOTDOTDOT: /^(\.\.\.)/
   DOTDOT: /^(\.\.)/
@@ -185,8 +189,12 @@ analyse: tokens =>
       if !(token[0] == "NEWLINE" && (!last || last[0] == "NEWLINE"))
 
         # Look for reserved identifiers and mark them
-        if token[0] == "ID" and Keywords.indexOf(token[1]) >= 0
-          token[0] = "KEYWORD"
+        if token[0] == "ID"
+          if Keywords.indexOf(token[1]) >= 0
+            token[0] = "KEYWORD"
+          else if (idx: Booleans.indexOf(token[1])) >= 0
+            token[0] = "BOOLEAN"
+            token[1] = idx % 2 == 0
 
         # Convert strings to their raw value
         if token[0] == "STRING"
