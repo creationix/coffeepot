@@ -204,13 +204,4 @@
   };
   // Works as CommonJS module too
   exports ? exports.tokenize = tokenize : null;
-  // # Read the script from the current file
-  // File: require('file')
-  // process.mixin(require('sys'))
-  //
-  // File.read('../test/sample.coffee').addCallback() coffee =>
-  //   # puts("\nCoffeeScript\n")
-  //   # puts(coffee)
-  //   puts("\nTokens\n")
-  //   puts(inspect(tokens: tokenize(coffee)))
 })();
