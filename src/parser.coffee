@@ -1,82 +1,79 @@
-
 parse: tokens =>
   pos: 0
-  done: false
-  tree: []
+  old: pos
 
-  end: =>
-    if (node: tokens[pos][0]) == "END"
-      done: true
-      node
+  # Shortcut to eat the next token
+  eat: =>
+    pos++
+    tokens[pos - 1]
 
-  comment: =>
-    if tokens[pos][0] == "COMMENT"
-      node: tokens[pos]
-      pos++
-      if tokens[pos][0] == "NEWLINE"
-        pos++
-      node
+  # Shortcut for the type of the next token
+  next_type: =>
+    tokens[pos][0]
 
-  statement: =>
-    if (exp: expression())
-      if newline()
-        ["STATEMENT", exp]
+  # Shortcut for the value of the next token
+  next_value: =>
+    tokens[pos][1]
 
-  expression: =>
-    post_if() ||
-    assignment() ||
-    number() ||
-    boolean()
+  # Shortcut for [](){}
+  grouping: value =>
+    if next_type() == "GROUPING" and next_value() == value
+      eat()
 
-  post_if: =>
-    old_pos: pos
-    if (exp: expression())
-      if tokens[pos][0] == "KEYWORD" && tokens[pos][1] == "if"
-        pos++
-        if exp2: expression()
-          ["POST_IF", exp, exp2]
-    pos: old_pos
-    null
+  keyword: value =>
+    if next_type() == "KEYWORD" and next_value() == value
+      eat()
 
-
-  boolean: =>
-    node: tokens[pos]
-    if node[0] == "KEYWORD"
-      if node[1] == "true" or node[1] == "false"
-        pos++
-        ["BOOLEAN", node[1]]
-
-  number: =>
-    if tokens[pos][0] == "NUMBER"
-      node: tokens[pos]
-      pos++
-      node
+  same: type =>
+    if next_type() == type
+      eat()
 
   newline: =>
-    if tokens[pos][0] == "NEWLINE"
-      node: tokens[pos]
-      pos++
-      node
+    same("NEWLINE")
+
+  fail: =>
+    pos: old
+    null
+
+  #############################################
+
+  expression: =>
+    old: pos
+    if (e: same("NUMBER") || same("BOOLEAN") || assignment() || same("ID"))
+      return ["EXPRESSION", e]
+    fail()
+
+  post_if: =>
+    old: pos
+    if (e: expression()) and keyword("if") and (c: expression())
+      return ["POST_IF", e, c]
+    fail()
 
   assignment: =>
-    if tokens[pos][0] == "ID"
-      variable: tokens[pos]
-      pos += 1
-      if tokens[pos][0] == "COLON"
-        pos += 1
-        if (exp: expression())
-          ["ASSIGNMENT", [variable, exp]]
+    old: pos
+    if (v: same("ID")) and same("COLON") and (e: expression())
+      return ["ASSIGNMENT", [v, e]]
+    fail()
 
-  while not done
-    next: comment() || statement() || end()
-    if next
-      tree.push(next)
-    else
-      debug(inspect(tree))
-      throw new Error("Parse Error: " + tokens[pos])
-  tree
+  statement: =>
+    old: pos
+    if (s: post_if() || expression()) && newline()
+      return ["STATEMENT", s]
+    fail()
 
+  block: =>
+    old: pos
+    code: []
+    while (s: statement() or same("COMMENT") or newline())
+      if (s[0] != "NEWLINE")
+        debug(inspect(s))
+        code.push(s)
+    if code.length > 0
+      return ["BLOCK", code]
+    fail()
 
+  debug(inspect(block()))
+  debug(inspect(tokens[pos]))
 
 # Read the script from the current file
 File: require('file')
