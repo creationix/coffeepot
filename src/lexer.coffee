@@ -59,7 +59,7 @@ Tokens: {
 
   # Parse heredoc strings using a simple state machine
   HEREDOC: code =>
-    if !(slice: code.match(/^("""|''')/))
+    if !(slice: code.match(/^("""|''')\n/))
       return null
     slice: slice[1]
     pos: 3
@@ -138,6 +138,17 @@ tokenize: source =>
     pos += match.length
   analyse(tokens)
 
+strip_heredoc: raw =>
+  lines: raw.substr(4, raw.length - 7).split("\n")
+  min: lines[0].match(/^\s*/)[0].length
+  for line in lines
+    if (indent: line.match(/^\s*/)[0].length) < min
+      min = indent
+  lines = lines.map() line =>
+    line.substr(min, line.length)
+  lines.pop()
+  return lines.join("\n")
+
 # Take a raw token stream and strip out unneeded whitespace tokens and insert
 # indent/dedent tokens. By using a stack of indentation levels, we can support
 # mixed spaces and tabs as long the programmer is consistent within blocks.
@@ -172,8 +183,19 @@ analyse: tokens =>
     # Strip out unwanted whitespace tokens
     if token[0] != "WS"
       if !(token[0] == "NEWLINE" && (!last || last[0] == "NEWLINE"))
+        # Look for reserved identifiers and mark them
         if token[0] == "ID" and Keywords.indexOf(token[1]) >= 0
           token[0] = "KEYWORD"
+
+        # Convert strings to their raw value
+        if token[0] == "STRING"
+          token[1] = token[1].replace(/\n/g, "\\n")
+          token[1] = JSON.parse(token[1])
+
+        # Strip leading whitespace off heredoc blocks
+        if token[0] == "HEREDOC"
+          token[1] = strip_heredoc(token[1])
+          token[0] = "STRING"
         result.push(token)
         last: token
 

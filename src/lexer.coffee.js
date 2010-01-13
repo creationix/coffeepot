@@ -1,5 +1,5 @@
 (function(){
-  var Keywords, Tokens, analyse, match_token, tokenize, tokens;
+  var Keywords, Tokens, analyse, match_token, strip_heredoc, tokenize, tokens;
   Keywords = ["if", "else", "then", "unless", "true", "false", "yes", "no", "on", "off", "and", "or", "is", "isnt", "not", "new", "return", "try", "catch", "finally", "throw", "break", "continue", "for", "in", "of", "by", "where", "while", "switch", "when", "super", "extends", "arguments", "delete", "instanceof", "typeof"];
   // Remember that regular expressions are really functions, so for the special
   // cases where regular expressions aren't powerful enough, we can use a custom
@@ -52,7 +52,7 @@
     // Parse heredoc strings using a simple state machine
     HEREDOC: function HEREDOC(code) {
       var __a, done, len, pos, slice;
-      if (!(slice = code.match(/^("""|''')/))) {
+      if (!(slice = code.match(/^("""|''')\n/))) {
         return null;
       }
       slice = slice[1];
@@ -149,6 +149,21 @@
     }
     return analyse(tokens);
   };
+  strip_heredoc = function strip_heredoc(raw) {
+    var __a, __b, indent, line, lines, min;
+    lines = raw.substr(4, raw.length - 7).split("\n");
+    min = lines[0].match(/^\s*/)[0].length;
+    __a = lines;
+    for (__b=0; __b<__a.length; __b++) {
+      line = __a[__b];
+      (indent = line.match(/^\s*/)[0].length) < min ? min = indent : null;
+    }
+    lines = lines.map(function(line) {
+      return line.substr(min, line.length);
+    });
+    lines.pop();
+    return lines.join("\n");
+  };
   // Take a raw token stream and strip out unneeded whitespace tokens and insert
   // indent/dedent tokens. By using a stack of indentation levels, we can support
   // mixed spaces and tabs as long the programmer is consistent within blocks.
@@ -188,7 +203,18 @@
       // Strip out unwanted whitespace tokens
       if (token[0] !== "WS") {
         if (!(token[0] === "NEWLINE" && (!last || last[0] === "NEWLINE"))) {
+          // Look for reserved identifiers and mark them
           token[0] === "ID" && Keywords.indexOf(token[1]) >= 0 ? token[0] = "KEYWORD" : null;
+          // Convert strings to their raw value
+          if (token[0] === "STRING") {
+            token[1] = token[1].replace(/\n/g, "\\n");
+            token[1] = JSON.parse(token[1]);
+          }
+          // Strip leading whitespace off heredoc blocks
+          if (token[0] === "HEREDOC") {
+            token[1] = strip_heredoc(token[1]);
+            token[0] = "STRING";
+          }
           result.push(token);
           last = token;
         }
