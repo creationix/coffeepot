@@ -9,7 +9,7 @@ Keywords: [
   "for", "in", "of", "by", "where", "while"
   "switch", "when"
   "super", "extends"
-  "arguments"
+  "arguments", "var"
   "delete", "instanceof", "typeof"
 ]
 
@@ -183,6 +183,7 @@ analyse: tokens =>
     # Strip out unwanted whitespace tokens
     if token[0] != "WS"
       if !(token[0] == "NEWLINE" && (!last || last[0] == "NEWLINE"))
+
         # Look for reserved identifiers and mark them
         if token[0] == "ID" and Keywords.indexOf(token[1]) >= 0
           token[0] = "KEYWORD"

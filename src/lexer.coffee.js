@@ -1,6 +1,6 @@
 (function(){
   var Keywords, Tokens, analyse, match_token, strip_heredoc, tokenize, tokens;
-  Keywords = ["if", "else", "then", "unless", "true", "false", "yes", "no", "on", "off", "and", "or", "is", "isnt", "not", "new", "return", "try", "catch", "finally", "throw", "break", "continue", "for", "in", "of", "by", "where", "while", "switch", "when", "super", "extends", "arguments", "delete", "instanceof", "typeof"];
+  Keywords = ["if", "else", "then", "unless", "true", "false", "yes", "no", "on", "off", "and", "or", "is", "isnt", "not", "new", "return", "try", "catch", "finally", "throw", "break", "continue", "for", "in", "of", "by", "where", "while", "switch", "when", "super", "extends", "arguments", "var", "delete", "instanceof", "typeof"];
   // Remember that regular expressions are really functions, so for the special
   // cases where regular expressions aren't powerful enough, we can use a custom
   // function.
