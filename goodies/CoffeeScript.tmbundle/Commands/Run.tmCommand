@@ -8,10 +8,16 @@
 	<string>#!/usr/local/bin/ruby
 source = ENV["TM_FILEPATH"]
 target = source.sub("/src/", "/lib/").sub(/\.coffee$/, ".js")
-compiler = "/Users/tim/Code/coffee-script/bin/coffee"
+coffee = "/Users/tim/Code/coffee-script/bin/coffee"
 node = "/usr/local/bin/node"
-puts "&lt;pre&gt;"
-puts `#{compiler} #{source} -p &gt; #{target} &amp;&amp; #{node} #{target}`.gsub('&lt;', '&amp;lt;').gsub('&amp;', '&amp;amp;')
+puts "&lt;h1&gt;Compile and run&lt;/h1&gt;"
+puts "&lt;b&gt;" + `#{coffee} --version` + "&lt;/b&gt;"
+puts " (#{coffee})&lt;br /&gt;"
+puts "&lt;b&gt;NodeJS version " + `#{node} -v` + "&lt;/b&gt;"
+puts " (#{node})&lt;br /&gt;"
+puts "&lt;hr /&gt;"
+puts '&lt;pre style="font-family:monaco; border:1px solid #888; background-color:#333;color:#eee;padding:4px;"&gt;'
+puts `#{coffee} #{source} -p &gt; #{target} &amp;&amp; #{node} #{target}`.gsub('&lt;', '&amp;lt;').gsub('&amp;', '&amp;amp;')
 puts "&lt;/pre&gt;"
 
 </string>
