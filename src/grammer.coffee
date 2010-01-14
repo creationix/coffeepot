@@ -370,3 +370,7 @@ NonTerminals: {
     "Expression UNLESS Expression":      => new IfNode(this[2], Expressions.wrap(this[0]), null, {"statement": true, "invert": true})
   }
 }
+
+# Works as CommonJS module too
+if `exports`
+  `exports.NonTerminals = NonTerminals`
