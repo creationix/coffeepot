@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>beforeRunningCommand</key>
+	<string>saveActiveFile</string>
+	<key>command</key>
+	<string>#!/usr/local/bin/ruby
+source = ENV["TM_FILEPATH"]
+target = source.sub("/src/", "/lib/").sub(/\.coffee$/, ".js")
+compiler = "/Users/tim/Code/coffee-script/bin/coffee"
+node = "/usr/local/bin/node"
+puts "&lt;pre&gt;"
+puts `#{compiler} #{source} -p &gt; #{target} &amp;&amp; #{node} #{target}`.gsub('&lt;', '&amp;lt;').gsub('&amp;', '&amp;amp;')
+puts "&lt;/pre&gt;"
+
+</string>
+	<key>input</key>
+	<string>none</string>
+	<key>keyEquivalent</key>
+	<string>@r</string>
+	<key>name</key>
+	<string>Run</string>
+	<key>output</key>
+	<string>showAsHTML</string>
+	<key>scope</key>
+	<string>source.coffee</string>
+	<key>uuid</key>
+	<string>17A9B3DB-8396-431F-8A2A-19AEAAF11158</string>
+</dict>
+</plist>
