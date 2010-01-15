@@ -5,6 +5,7 @@ process.mixin(CoffeePot, require("coffeepot/parser"))
 
 # Splits a non-terminal pattern into an array of plain strings.
 split: pattern =>
+  pattern = pattern.substr(1, pattern.length - 2)
   if pattern == ""
     []
   else
@@ -34,23 +35,29 @@ parse: tokens =>
 
   # Tries to match a non-terminal at a specified location in the token stream
   try_nonterminal: memoize() name, offset =>
+    puts("non-terminal: " + name + " " + offset)
 
     match: null
 
     # Try all the options in the non-terminal's definition
-    for pattern_string, callback of grammar[name]
-      if result: try_pattern(pattern_string, offset)
-        token: result[0]
-        if !match || token.length > match.length
-          puts("Matched " + name + " to " + JSON.stringify(token))
+    for pattern_pair, callback in grammar[name]
+      pattern_string: pattern_pair[0]
+      if result: try_pattern("[" + pattern_string + "]", offset)
+        fn: pattern_pair[1]
+        token: if fn
+          fn.call(result[0])
+        else
+          result[0]
+        if !match || result.offset > match.longest
+          puts("Matched " + offset + " " + name + " to " + JSON.stringify(token))
           match: {
-            length: token.length
+            longest: token.offset
             token: token
             offset: result[1]
           }
 
     return unless match
-    puts("Longest match " + name + " is " + JSON.stringify(match.token))
+    puts("Longest match " + offset + " " + name + " is " + JSON.stringify(match.token))
     return [[name], match.offset] if match.length == 0
     return [[name, match.token[0]], match.offset] if match.length == 1
     [[name, match.token], match.offset]
@@ -58,6 +65,9 @@ parse: tokens =>
   # Try's to match a single line in the grammar
   try_pattern: memoize() pattern_string, offset =>
     puts("  pattern: " + pattern_string + " " + offset)
+
+    # Prevent infinite recursion
+    store(offset, pattern_string, false) unless check(offset, pattern_string)
 
     pattern: split(pattern_string)
 
@@ -82,11 +92,7 @@ parse: tokens =>
     else if item == tokens[offset][0]
         return [tokens[offset], offset + 1]
 
-  [tree, offset] = try_nonterminal("Root", 0)
-  if tokens[offset][0] != "END"
-    puts("DUMP OF TREE: " + inspect(tree))
-    throw new Error("Unexpected token: " + tokens[offset])
-  tree
+  try_nonterminal("Root", 0)[0]
 
 
 
