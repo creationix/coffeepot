@@ -1,5 +1,6 @@
-
-
-# Comment
-age: 27
+true
+false
+1
+"Hello"
+/World/
 

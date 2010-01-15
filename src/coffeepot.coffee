@@ -56,7 +56,7 @@ parse: tokens =>
 
     return unless match
     puts("Longest match " + offset + " " + name + " is " + JSON.stringify(match.token))
-    [[name, match.token], match.offset]
+    [[name].concat(match.token), match.offset]
 
   # Try's to match a single line in the grammar
   try_pattern: memoize() pattern_string, offset =>
@@ -81,6 +81,7 @@ parse: tokens =>
 
   # Tries to match a single item in the grammar
   try_item: memoize() item, offset =>
+    return if offset >= tokens.length
     puts("    item: " + item + " against " + tokens[offset][0] + " " + offset)
     # Match nested non-terminals
     if grammar[item]
@@ -94,11 +95,11 @@ parse: tokens =>
 
 CoffeePot.compile: code =>
   tokens: CoffeePot.tokenize(code)
-  puts("\nTokens:\n")
-  puts(inspect(tokens))
   tree: parse(tokens)
   puts("\nTree:\n")
   puts(inspect(tree))
+  puts("\nTokens:\n")
+  puts(inspect(tokens))
   puts("Code:\n")
   puts(code)
 
