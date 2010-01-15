@@ -233,10 +233,3 @@ analyse: tokens =>
 # Works as CommonJS module too
 if `exports`
   `exports.tokenize = tokenize`
-
-  process.mixin(require('sys'))
-  file: require('file')
-  file.read("../../test/parse.coffee").addErrback(debug).addCallback() code =>
-    tokens: tokenize(code)
-    puts(inspect(tokens))
-
