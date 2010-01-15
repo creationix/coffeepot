@@ -1,4 +1,4 @@
-grammer: {
+grammar: {
 
   # All parsing will end in this rule, being the trunk of the AST.
   Root: {
@@ -18,21 +18,21 @@ grammer: {
   # All types of expressions in our language. The basic unit of CoffeeScript
   # is the expression.
   Expression: {
-    "Value":     null
-    "Call":      null
-    "Code":      null
-    "Operation": null
+    # "Value":     null
+    # "Call":      null
+    # "Code":      null
+    # "Operation": null
     "Assign":    null
-    "If":        null
-    "Try":       null
-    "Throw":     null
-    "Return":    null
-    "While":     null
-    "For":       null
-    "Switch":    null
-    "Extends":   null
-    "Splat":     null
-    "Existence": null
+    # "If":        null
+    # "Try":       null
+    # "Throw":     null
+    # "Return":    null
+    # "While":     null
+    # "For":       null
+    # "Switch":    null
+    # "Extends":   null
+    # "Splat":     null
+    # "Existence": null
     "Comment":   null
   }
 
@@ -58,12 +58,7 @@ grammer: {
     "BREAK":                             => new LiteralNode(this[0])
     "CONTINUE":                          => new LiteralNode(this[0])
     "ARGUMENTS":                         => new LiteralNode(this[0])
-    "TRUE":                              => new LiteralNode(true)
-    "FALSE":                             => new LiteralNode(false)
-    "YES":                               => new LiteralNode(true)
-    "NO":                                => new LiteralNode(false)
-    "ON":                                => new LiteralNode(true)
-    "OFF":                               => new LiteralNode(false)
+    "BOOLEAN":                              => new LiteralNode(true)
   }
 
   # Assignment to a variable (or index).
@@ -179,11 +174,11 @@ grammer: {
   Value: {
     "IDENTIFIER":                        => new ValueNode(this[0])
     "Literal":                           => new ValueNode(this[0])
-    "Array":                             => new ValueNode(this[0])
-    "Object":                            => new ValueNode(this[0])
-    "Parenthetical":                     => new ValueNode(this[0])
-    "Range":                             => new ValueNode(this[0])
-    "Value Accessor":                    => this[0] << this[1]
+    # "Array":                             => new ValueNode(this[0])
+    # "Object":                            => new ValueNode(this[0])
+    # "Parenthetical":                     => new ValueNode(this[0])
+    # "Range":                             => new ValueNode(this[0])
+    # "Value Accessor":                    => this[0] << this[1]
     "Invocation Accessor":               => new ValueNode(this[0], [this[1]])
   }
 
@@ -373,4 +368,4 @@ grammer: {
 
 # Works as CommonJS module too
 if `exports`
-  `exports.grammer = grammer`
+  `exports.grammar = grammar`

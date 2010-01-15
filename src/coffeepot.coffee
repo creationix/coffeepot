@@ -1,5 +1,5 @@
 CoffeePot: `exports`
-process.mixin(CoffeePot, require("coffeepot/grammer"))
+process.mixin(CoffeePot, require("coffeepot/grammar"))
 process.mixin(CoffeePot, require("coffeepot/lexer"))
 process.mixin(CoffeePot, require("coffeepot/parser"))
 
@@ -24,9 +24,9 @@ fail: name, offset =>
 already: name, offset =>
   failed_cache[offset] && failed_cache[offset].indexOf(name) >= 0
 
-# Recursive decent grammer interpreter!
+# Recursive decent grammar interpreter!
 parse: tokens =>
-  grammer: CoffeePot.grammer
+  grammar: CoffeePot.grammar
 
   # Tries to match a non-terminal at a specified location in the token stream
   try_nonterminal: name, offset =>
@@ -39,8 +39,8 @@ parse: tokens =>
 
     # Try all the options in the non-terminal's definition
     old_offset: offset
-    for pattern_string, callback of grammer[name]
       offset: old_offset
+    for pattern_string, callback of grammar[name]
       try
         result: try_pattern(split(pattern_string), offset)
         offset = result[1]
@@ -61,7 +61,7 @@ parse: tokens =>
     else
       [[name, match], offset]
 
-  # Try's to match a single line in the grammer
+  # Try's to match a single line in the grammar
   try_pattern: pattern, offset =>
 
     puts("  pattern: " + pattern)
@@ -77,12 +77,12 @@ parse: tokens =>
       result[0]
     [contents, offset]
 
-  # Tries to match a single item in the grammer
+  # Tries to match a single item in the grammar
   try_item: item, offset =>
     # puts("    item: " + item + " against " + tokens[offset][0])
     # Match nested non-terminals
-    if grammer[item]
       try_nonterminal(item, offset) unless already(item, offset)
+    if grammar[item]
     else
       if item == tokens[offset][0]
         puts ("ACCEPT:" + tokens[offset] + " " + offset)
