@@ -3,6 +3,8 @@ process.mixin(CoffeePot, require("coffeepot/grammar"))
 process.mixin(CoffeePot, require("coffeepot/lexer"))
 process.mixin(CoffeePot, require("coffeepot/parser"))
 
+debug: false
+
 # Splits a non-terminal pattern into an array of plain strings.
 split: pattern =>
   pattern = pattern.substr(1, pattern.length - 2)
@@ -14,13 +16,20 @@ split: pattern =>
 
 # Helpers to memoize the functions
 cache: {}
+locks: {}
 store: offset, name, value =>
   cache[offset] = [] unless cache[offset]
   cache[offset][name] = value
 check: offset, name =>
+  # return true if locks[offset+name]
   cache[offset] && cache[offset].hasOwnProperty(name)
 get: offset, name =>
+  # return false if locks[offset+name]
   cache[offset][name]
+lock: offset, name =>
+  locks[offset+name] = true
+unlock: offset, name =>
+  delete locks[offset+name]
 
 memoize: fn =>
   memoized: name, offset =>
@@ -33,20 +42,23 @@ parse: tokens =>
 
   # Tries to match a non-terminal at a specified location in the token stream
   try_nonterminal: memoize() name, offset =>
-    # puts("non-terminal: " + name + " " + offset)
+    puts("non-terminal: " + name + " " + offset) if debug
 
     match: null
     non_terminal: grammar[name]
 
     # Try all the options in the non-terminal's definition
     for option in non_terminal.options
-      if result: try_pattern("[" + option.pattern + "]", offset)
+      pattern_string: "[" + option.pattern + "]"
+      result: try_pattern(pattern_string, offset)
+      unlock(offset, pattern_string)
+      if result
         token: if option.filter
           option.filter.call(result[0])
         else
           result[0]
         if !match || result.offset > match.longest
-          # puts("Matched " + offset + " " + name + " to " + JSON.stringify(token))
+          puts("Matched " + offset + " " + name + " to " + JSON.stringify(token)) if debug
           match: {
             longest: token.offset
             token: token
@@ -58,15 +70,15 @@ parse: tokens =>
       match.token: non_terminal.filter.call(match.token, name)
     else
       [name, match.token]
-    # puts("Longest match " + offset + " " + name + " is " + JSON.stringify(match.token))
+    puts("Longest match " + offset + " " + name + " is " + JSON.stringify(match.token)) if debug
     [final, match.offset]
 
   # Try's to match a single line in the grammar
   try_pattern: memoize() pattern_string, offset =>
-    # puts("  pattern: " + pattern_string + " " + offset)
+    puts("  pattern: " + pattern_string + " " + offset) if debug
 
     # Prevent infinite recursion
-    store(offset, pattern_string, false) unless check(offset, pattern_string)
+    lock(offset, pattern_string)
 
     pattern: split(pattern_string)
 
@@ -76,7 +88,7 @@ parse: tokens =>
     contents: []
     while pos < length
       return unless result: try_item(pattern[pos], offset)
-      # puts ("    ACCEPT: " + pattern[pos] + " " + JSON.stringify(result))
+      puts ("    ACCEPT: " + pattern[pos] + " " + JSON.stringify(result)) if debug
       offset = result[1]
       contents.push(result[0])
       pos++

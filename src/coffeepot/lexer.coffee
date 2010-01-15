@@ -31,7 +31,7 @@ Containers: [
 # function.
 Tokens: {
   # These are taken literally
-  CODE: /^([\(\)\[\]\{\}:,?])/
+  CODE: /^([\(\)\[\]\{\}:;,?])/
 
   NEWLINE: /^(\n)/
   WS: /^([ \t]+)/
@@ -168,9 +168,12 @@ analyse: tokens =>
   result: []
   stack: [""]
   for token in tokens
-    if token[0] == "WS" and last and last[0] == "NEWLINE"
+    if last and last[0] == "NEWLINE"
       top: stack[stack.length - 1]
-      indent: token[1]
+      indent: if token[0] == "WS"
+        token[1]
+      else
+        ""
 
       # Look for dedents
       while indent.length < top.length
@@ -219,7 +222,7 @@ analyse: tokens =>
           token.length = 1
 
         result.push(token)
-        last: token
+    last: token
 
   # Flush the stack
   while stack.length > 1
