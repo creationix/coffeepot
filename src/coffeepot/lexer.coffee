@@ -18,23 +18,30 @@ Keywords: [
   "delete", "instanceof", "typeof"
 ]
 
+# Tokens that contain a value
+Containers: [
+  "COMMENT", "ID", "PROPERTY"
+  "OPERATOR", "NUMBER", "BOOLEAN"
+  "RAW", "HEREDOC", "STRING", "REGEXP"
+]
+
+
 # Remember that regular expressions are really functions, so for the special
 # cases where regular expressions aren't powerful enough, we can use a custom
 # function.
 Tokens: {
+  # These are taken literally
+  CODE: /^([\(\)\[\]\{\}:,?])/
+
   NEWLINE: /^(\n)/
   WS: /^([ \t]+)/
   COMMENT: /^(#.*)\n?/
   ID: /^([a-z_$][a-z0-9_$]*)/i
   PROPERTY: /^(\.[a-z_$][a-z0-9_$]*)/i
-  COLON: /^(:)/
   ROCKET: /^(=>)/
-  OPERATOR: /^([+\*&|\/\-%=<>:!]+)/
-  GROUPING: /^([\(\)\[\]\{\}])/
-  COMMA: /^(,)/
+  OPERATOR: /^([+\*&|\/\-%=<>!]+)/
   DOTDOTDOT: /^(\.\.\.)/
   DOTDOT: /^(\.\.)/
-  EXISTENTIAL: /^(\?)/
 
   # A little cheating to keep from having to write a proper number parser
   NUMBER: code =>
@@ -191,7 +198,7 @@ analyse: tokens =>
         # Look for reserved identifiers and mark them
         if token[0] == "ID"
           if Keywords.indexOf(token[1]) >= 0
-            token[0] = "KEYWORD"
+            token = [token[1]]
           else if (idx: Booleans.indexOf(token[1])) >= 0
             token[0] = "BOOLEAN"
             token[1] = idx % 2 == 0
@@ -205,6 +212,12 @@ analyse: tokens =>
         if token[0] == "HEREDOC"
           token[1] = strip_heredoc(token[1])
           token[0] = "STRING"
+
+        if token[0] == "CODE"
+          token = [token[1]]
+        if Containers.indexOf(token[0]) < 0
+          token.length = 1
+
         result.push(token)
         last: token
 
@@ -213,7 +226,7 @@ analyse: tokens =>
     result.push(["DEDENT", stack.pop()])
 
   # Tack on tail to make parsing easier
-  result.push(["END", ""])
+  result.push(["END"])
 
   result
 
@@ -221,4 +234,9 @@ analyse: tokens =>
 if `exports`
   `exports.tokenize = tokenize`
 
+  process.mixin(require('sys'))
+  file: require('file')
+  file.read("../../test/parse.coffee").addErrback(debug).addCallback() code =>
+    tokens: tokenize(code)
+    puts(inspect(tokens))
 
