@@ -30,20 +30,36 @@ parse: tokens =>
 
   # Tries to match a non-terminal at a specified location in the token stream
   try_nonterminal: name, offset =>
-    puts("non-terminal: " + name)
+    if name == "Expressions" || name == "Terminal"
+      puts("non-terminal: " + name)
+      puts(tokens[offset])
+
+    length: null
+    match: null
+
     # Try all the options in the non-terminal's definition
+    old_offset: offset
     for pattern_string, callback of grammer[name]
+      offset: old_offset
       try
         result: try_pattern(split(pattern_string), offset)
-        puts("SUCCESS!!! " + inspect(result))
-        throw("SUCCESS")
-        return result
+        offset = result[1]
+        result = result[0]
+        if !length || result.length > length
+          length: result.length
+          match: result
       catch e
         if (e == "NO_PATTERN")
           fail(name, offset)
         else
           throw new Error(e)
-    false
+    return false unless match
+    if match.length == 0
+      [[name], offset]
+    else if match.length == 1
+      [[name, match[0]], offset]
+    else
+      [[name, match], offset]
 
   # Try's to match a single line in the grammer
   try_pattern: pattern, offset =>
@@ -51,36 +67,38 @@ parse: tokens =>
     puts("  pattern: " + pattern)
     # Ignore empty patterns for now
     if pattern.length == 0
-      throw "NO_PATTERN"
+      []
 
-    for item in pattern
+    contents: for item in pattern
       result: try_item(item, offset) unless already(item, offset)
-      puts("  result: " + inspect(result))
+      # puts("  result: " + inspect(result))
       throw "NO_PATTERN" unless result
-      result
+      offset = result[1]
+      result[0]
+    [contents, offset]
 
   # Tries to match a single item in the grammer
   try_item: item, offset =>
-    puts("    item: " + item + " against " + tokens[offset][0])
+    # puts("    item: " + item + " against " + tokens[offset][0])
     # Match nested non-terminals
     if grammer[item]
       try_nonterminal(item, offset) unless already(item, offset)
     else
-      item == tokens[offset][0]
+      if item == tokens[offset][0]
+        puts ("ACCEPT:" + tokens[offset] + " " + offset)
+        return [tokens[offset], offset + 1]
 
-  accept: offset =>
-    puts("Accepted:" + inspect(tokens[offset]))
-
-
-  try_nonterminal("Root", 0)
+  [tree, offset] = try_nonterminal("Root", 0)
+  if tokens[offset][0] != "END"
+    puts("DUMP OF TREE: " + inspect(tree))
+    throw new Error("Unexpected token: " + tokens[offset])
+  tree
 
 
 
 CoffeePot.compile: code =>
   tokens: CoffeePot.tokenize(code)
   tree: parse(tokens)
-  puts("\nFailed Cache:\n")
-  puts(inspect(failed_cache))
   puts("\nTree:\n")
   puts(inspect(tree))
   puts("\nTokens:\n")
