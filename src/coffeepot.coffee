@@ -11,81 +11,75 @@ split: pattern =>
     pattern.match(/('[^']+'|\S+)/g).map() item =>
       item.replace(/'/g, '')
 
-failed_cache: {}
+# Helpers to memoize the functions
+cache: {}
+store: offset, name, value =>
+  # puts("Storing " + inspect(value) + " at " + inspect(name) + "," + offset)
+  cache[offset] = [] unless cache[offset]
+  cache[offset][name] = value
+check: offset, name =>
+  cache[offset] && cache[offset].hasOwnProperty(name)
+get: offset, name =>
+  cache[offset][name]
 
-# Store an item in the failure cache
-fail: name, offset =>
-  failed_cache[offset] = [] unless failed_cache[offset]
-  return false if failed_cache[offset].indexOf(name) >= 0
-  failed_cache[offset].push(name)
-  false
-
-# Check the failure cache
-already: name, offset =>
-  failed_cache[offset] && failed_cache[offset].indexOf(name) >= 0
+memoize: fn =>
+  memoized: name, offset =>
+    # puts(inspect(name) + " at " + offset)
+    return get(offset, name) if check(offset, name)
+    store(offset, name, fn(name, offset))
 
 # Recursive decent grammar interpreter!
 parse: tokens =>
   grammar: CoffeePot.grammar
 
   # Tries to match a non-terminal at a specified location in the token stream
-  try_nonterminal: name, offset =>
-    if name == "Expressions" || name == "Terminal"
-      puts("non-terminal: " + name)
-      puts(tokens[offset])
+  try_nonterminal: memoize() name, offset =>
 
-    length: null
     match: null
 
     # Try all the options in the non-terminal's definition
-    old_offset: offset
-      offset: old_offset
     for pattern_string, callback of grammar[name]
-      try
-        result: try_pattern(split(pattern_string), offset)
-        offset = result[1]
-        result = result[0]
-        if !length || result.length > length
-          length: result.length
-          match: result
-      catch e
-        if (e == "NO_PATTERN")
-          fail(name, offset)
-        else
-          throw new Error(e)
-    return false unless match
-    if match.length == 0
-      [[name], offset]
-    else if match.length == 1
-      [[name, match[0]], offset]
-    else
-      [[name, match], offset]
+      if result: try_pattern(pattern_string, offset)
+        token: result[0]
+        if !match || token.length > match.length
+          puts("Matched " + name + " to " + JSON.stringify(token))
+          match: {
+            length: token.length
+            token: token
+            offset: result[1]
+          }
+
+    return unless match
+    puts("Longest match " + name + " is " + JSON.stringify(match.token))
+    return [[name], match.offset] if match.length == 0
+    return [[name, match.token[0]], match.offset] if match.length == 1
+    [[name, match.token], match.offset]
 
   # Try's to match a single line in the grammar
-  try_pattern: pattern, offset =>
+  try_pattern: memoize() pattern_string, offset =>
+    puts("  pattern: " + pattern_string + " " + offset)
 
-    puts("  pattern: " + pattern)
-    # Ignore empty patterns for now
-    if pattern.length == 0
-      []
+    pattern: split(pattern_string)
 
-    contents: for item in pattern
-      result: try_item(item, offset) unless already(item, offset)
-      # puts("  result: " + inspect(result))
-      throw "NO_PATTERN" unless result
+    # While loops don't mess with scope, so they work well here.
+    pos: 0
+    length: pattern.length
+    contents: []
+    while pos < length
+      return unless result: try_item(pattern[pos], offset)
+      puts ("    ACCEPT: " + pattern[pos] + " " + JSON.stringify(result))
       offset = result[1]
-      result[0]
+      contents.push(result[0])
+      pos++
     [contents, offset]
 
   # Tries to match a single item in the grammar
-  try_item: item, offset =>
-    # puts("    item: " + item + " against " + tokens[offset][0])
+  try_item: memoize() item, offset =>
+    puts("    item: " + item + " against " + tokens[offset][0] + " " + offset)
     # Match nested non-terminals
-      try_nonterminal(item, offset) unless already(item, offset)
     if grammar[item]
-    else
-      if item == tokens[offset][0]
-        puts ("ACCEPT:" + tokens[offset] + " " + offset)
+      return try_nonterminal(item, offset)
+    else if item == tokens[offset][0]
         return [tokens[offset], offset + 1]
 
   [tree, offset] = try_nonterminal("Root", 0)
