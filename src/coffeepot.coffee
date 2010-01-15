@@ -15,7 +15,6 @@ split: pattern =>
 # Helpers to memoize the functions
 cache: {}
 store: offset, name, value =>
-  # puts("Storing " + inspect(value) + " at " + inspect(name) + "," + offset)
   cache[offset] = [] unless cache[offset]
   cache[offset][name] = value
 check: offset, name =>
@@ -25,7 +24,6 @@ get: offset, name =>
 
 memoize: fn =>
   memoized: name, offset =>
-    # puts(inspect(name) + " at " + offset)
     return get(offset, name) if check(offset, name)
     store(offset, name, fn(name, offset))
 
@@ -35,7 +33,7 @@ parse: tokens =>
 
   # Tries to match a non-terminal at a specified location in the token stream
   try_nonterminal: memoize() name, offset =>
-    puts("non-terminal: " + name + " " + offset)
+    # puts("non-terminal: " + name + " " + offset)
 
     match: null
 
@@ -58,8 +56,6 @@ parse: tokens =>
 
     return unless match
     puts("Longest match " + offset + " " + name + " is " + JSON.stringify(match.token))
-    return [[name], match.offset] if match.length == 0
-    return [[name, match.token[0]], match.offset] if match.length == 1
     [[name, match.token], match.offset]
 
   # Try's to match a single line in the grammar
@@ -92,17 +88,17 @@ parse: tokens =>
     else if item == tokens[offset][0]
         return [tokens[offset], offset + 1]
 
-  try_nonterminal("Root", 0)[0]
+  try_nonterminal("Block", 0)[0]
 
 
 
 CoffeePot.compile: code =>
   tokens: CoffeePot.tokenize(code)
+  puts("\nTokens:\n")
+  puts(inspect(tokens))
   tree: parse(tokens)
   puts("\nTree:\n")
   puts(inspect(tree))
-  puts("\nTokens:\n")
-  puts(inspect(tokens))
   puts("Code:\n")
   puts(code)
 
