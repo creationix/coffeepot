@@ -36,18 +36,17 @@ parse: tokens =>
     # puts("non-terminal: " + name + " " + offset)
 
     match: null
+    non_terminal: grammar[name]
 
     # Try all the options in the non-terminal's definition
-    for pattern_pair, callback in grammar[name]
-      pattern_string: pattern_pair[0]
-      if result: try_pattern("[" + pattern_string + "]", offset)
-        fn: pattern_pair[1]
-        token: if fn
-          fn.call(result[0])
+    for option in non_terminal.options
+      if result: try_pattern("[" + option.pattern + "]", offset)
+        token: if option.filter
+          option.filter.call(result[0])
         else
           result[0]
         if !match || result.offset > match.longest
-          puts("Matched " + offset + " " + name + " to " + JSON.stringify(token))
+          # puts("Matched " + offset + " " + name + " to " + JSON.stringify(token))
           match: {
             longest: token.offset
             token: token
@@ -55,12 +54,16 @@ parse: tokens =>
           }
 
     return unless match
-    puts("Longest match " + offset + " " + name + " is " + JSON.stringify(match.token))
-    [[name].concat(match.token), match.offset]
+    final: if non_terminal.filter
+      match.token: non_terminal.filter.call(match.token, name)
+    else
+      [name, match.token]
+    # puts("Longest match " + offset + " " + name + " is " + JSON.stringify(match.token))
+    [final, match.offset]
 
   # Try's to match a single line in the grammar
   try_pattern: memoize() pattern_string, offset =>
-    puts("  pattern: " + pattern_string + " " + offset)
+    # puts("  pattern: " + pattern_string + " " + offset)
 
     # Prevent infinite recursion
     store(offset, pattern_string, false) unless check(offset, pattern_string)
@@ -73,7 +76,7 @@ parse: tokens =>
     contents: []
     while pos < length
       return unless result: try_item(pattern[pos], offset)
-      puts ("    ACCEPT: " + pattern[pos] + " " + JSON.stringify(result))
+      # puts ("    ACCEPT: " + pattern[pos] + " " + JSON.stringify(result))
       offset = result[1]
       contents.push(result[0])
       pos++
@@ -82,7 +85,7 @@ parse: tokens =>
   # Tries to match a single item in the grammar
   try_item: memoize() item, offset =>
     return if offset >= tokens.length
-    puts("    item: " + item + " against " + tokens[offset][0] + " " + offset)
+    # puts("    item: " + item + " against " + tokens[offset][0] + " " + offset)
     # Match nested non-terminals
     if grammar[item]
       return try_nonterminal(item, offset)
