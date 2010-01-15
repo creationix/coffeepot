@@ -1,4 +1,4 @@
-NonTerminals: {
+grammer: {
 
   # All parsing will end in this rule, being the trunk of the AST.
   Root: {
@@ -373,4 +373,4 @@ NonTerminals: {
 
 # Works as CommonJS module too
 if `exports`
-  `exports.NonTerminals = NonTerminals`
+  `exports.grammer = grammer`
