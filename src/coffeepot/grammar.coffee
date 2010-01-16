@@ -1,5 +1,12 @@
 Grammar: {}
 
+zip: pairs =>
+  puts(inspect(pairs))
+  result: {}
+  for key, value in pairs
+    result[key] = value
+  result
+
 # Helper for non-terminal definitions
 g: options, fn =>
   non_terminal: {
@@ -47,8 +54,31 @@ Grammar: {
     p("Binop")
     p("Assign")
     p("Function")
+    p("Call")
+    p("Property")
     p("Value")
   ]) name => this[0]
+
+  Call: g([
+    p("Source PROPERTY ( Args )") => [this[0], this[1], this[3]]
+    p("Source PROPERTY ( )") => [this[0], this[1], null]
+    p("ID ( Args )") => [null, this[0], this[2]]
+    p("ID ( )") => [null, this[0], null]
+  ])
+
+  Property: g([
+    p("Source PROPERTY")
+  ])
+
+  Source: g([
+    p("ID")
+    p("( Expression )")
+  ]) name => this[0]
+
+  Args: g([
+    p("Expression , Args") => [this[0]].concat(this[2])
+    p("Expression")
+  ]) name => this
 
   Value: g([
     p("ID")
@@ -95,20 +125,22 @@ Grammar: {
     p("Expression")
   ]) => this
 
-  ItemSeperator: g([
-    p(",")
-    p("NEWLINE")
-  ]) => this
-
   Object: g([
+    p("{ NEWLINE INDENT ObjectPairs NEWLINE DEDENT }") => this[3]
     p("{ ObjectPairs }") => this[1]
     p("{ }") => []
   ])
 
   ObjectPairs: g([
-    p("ID : Expression , ObjectPairs") => [[this[0], this[2]]].concat(this[4])
-    p("ID : Expression") => [this[0], this[2]]
+    p("ID : Expression ItemSeperator ObjectPairs") => [[this[0][1], this[2]]].concat(this[4])
+    p("ID : Expression") => [[this[0][1], this[2]]]
   ]) => this
+
+  ItemSeperator: g([
+    p(",")
+    p("NEWLINE")
+  ]) => this
+
 
 }
 
