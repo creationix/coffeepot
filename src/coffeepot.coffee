@@ -97,7 +97,7 @@ parse: tokens =>
   # Tries to match a single item in the grammar
   try_item: memoize() item, offset =>
     return if offset >= tokens.length
-    # puts("    item: " + item + " against " + tokens[offset][0] + " " + offset)
+    puts("    item: " + item + " against " + tokens[offset][0] + " " + offset) if debug
     # Match nested non-terminals
     if grammar[item]
       return try_nonterminal(item, offset)
