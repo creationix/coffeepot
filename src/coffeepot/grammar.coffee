@@ -87,11 +87,11 @@ Grammar: {
     p("[ NEWLINE INDENT ArrayItems NEWLINE DEDENT ]") => this[3]
     p("[ ArrayItems ]") => this[1]
     p("[ ]") => []
-  ]) name => [name, this[0]]
+  ]) name => [name, this]
 
 
   ArrayItems: g([
-    p("Expression , ArrayItems") => [this[0]].concat(this[2])
+    p("Expression ItemSeperator ArrayItems") => [this[0]].concat(this[2])
     p("Expression")
   ]) => this
 
