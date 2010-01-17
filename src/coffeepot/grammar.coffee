@@ -1,4 +1,5 @@
-CoffeePot ?= {}
+root: exports ? this
+CoffeePot: (root.CoffeePot ?= {})
 Helper: CoffeePot.Helper ? require('coffeepot/helper').CoffeePot.Helper
 g: Helper.non_terminal
 p: Helper.option
@@ -124,6 +125,4 @@ grammar: Helper.define({
 
 })
 
-(exports ? this).CoffeePot: {
-  grammar: grammar
-}
+CoffeePot.grammar: grammar

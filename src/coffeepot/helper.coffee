@@ -1,3 +1,6 @@
+root: exports ? this
+CoffeePot: (root.CoffeePot ?= {})
+
 # Splits a non-terminal pattern into an array of plain strings.
 split: pattern =>
   if pattern == ""
@@ -48,6 +51,4 @@ Helper: {
     grammar
 }
 
-(exports ? this).CoffeePot: {
-  Helper: Helper
-}
+CoffeePot.Helper = Helper

@@ -1,5 +1,6 @@
-CoffeePot ?= {}
-grammar: CoffeePot.Helper ? require('coffeepot/grammar').CoffeePot.grammar
+root: exports ? this
+CoffeePot: (root.CoffeePot ?= {})
+grammar: CoffeePot.grammar ? require('coffeepot/grammar').CoffeePot.grammar
 
 debug: false
 
@@ -93,9 +94,6 @@ parse: tokens =>
 
   try_nonterminal("Block", 0)[0]
 
-
-(exports ? this).CoffeePot: {
-  parse: parse
-}
+CoffeePot.parse: parse
 
 

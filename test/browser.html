@@ -1,0 +1,52 @@
+<html>
+	<head>
+		<title>CoffeeScript compiler in the browser</title>
+		<script type="text/javascript" src="../build/coffeepot.js"></script>
+		<script type="text/javascript">
+			function compile() {
+				var form = document.getElementById("form");
+				var result = CoffeePot.compile(form.code.value);
+				console.log(result);
+				form.tokens.value = JSON.stringify(result.tokens);
+				form.tree.value = JSON.stringify(result.tree);
+				form.js.value = result.js;
+			}
+		</script>
+		<style type="text/css">
+			label {
+				display: block;
+				width: 100%;
+				font-size: 24px;
+				font-family: monaco;
+			}
+			textarea {
+				font-family: monaco;
+				font-size: 16px;
+				width: 100%;
+				height: 150px;
+
+			}
+		</style>
+	</head>
+	<body onload="compile();">
+		<form id="form" onsubmit="compile();return false;">
+			<p>
+				<label for="code">CoffeeScript Code</label>
+				<textarea id="code" name="code">double: x => x * x</textarea>
+			</p>
+			<p>
+				<label for="tokens">Tokens</label>
+				<textarea id="tokens" name="tokens"></textarea>
+			</p>
+			<p>
+				<label for="tree">Abstract Syntax Tree</label>
+				<textarea id="tree" name="tree"></textarea>
+			<p>
+			</p>
+				<label for="js">JavaScript Output</label>
+				<textarea id="js" name="js"></textarea>
+			</p>
+			<input type="submit" value="Compile!" />
+		</form>
+	</body>
+</html>

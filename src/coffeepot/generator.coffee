@@ -1,3 +1,3 @@
-(exports ? this).CoffeePot: {
-  generate: =>
-}
+root: exports ? this
+CoffeePot: (root.CoffeePot ?= {})
+CoffeePot.generate: =>

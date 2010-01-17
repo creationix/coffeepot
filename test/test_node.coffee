@@ -1,4 +1,4 @@
-CoffeePot ?= require('coffeepot').CoffeePot
+CoffeePot: require('coffeepot').CoffeePot
 
 process.mixin(require('sys'))
 file: require('file')

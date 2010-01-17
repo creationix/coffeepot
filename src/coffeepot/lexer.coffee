@@ -1,3 +1,5 @@
+root: exports ? this
+CoffeePot: (root.CoffeePot ?= {})
 
 Booleans: [
   "true", "false"
@@ -221,7 +223,7 @@ analyse: tokens =>
   result
 
 # Turns a long string into a stream of tokens
-tokenize: source =>
+CoffeePot.tokenize: source =>
   length: source.length
   pos: 0
   while pos < length
@@ -229,7 +231,3 @@ tokenize: source =>
     tokens.push([type, match])
     pos += match.length
   analyse(tokens)
-
-(exports ? this).CoffeePot: {
-  tokenize: tokenize
-}
