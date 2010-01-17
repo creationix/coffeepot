@@ -139,16 +139,6 @@ match_token: code =>
     debug(inspect(tokens))
     throw new Error("Unknown Token: " + JSON.stringify(code.split("\n")[0]))
 
-# Turns a long string into a stream of tokens
-tokenize: source =>
-  length: source.length
-  pos: 0
-  while pos < length
-    [type, match, consume] = match_token(source.substr(pos, length))
-    tokens.push([type, match])
-    pos += match.length
-  analyse(tokens)
-
 strip_heredoc: raw =>
   lines: raw.substr(4, raw.length - 7).split("\n")
   min: lines[0].match(/^\s*/)[0].length
@@ -230,6 +220,16 @@ analyse: tokens =>
 
   result
 
-# Works as CommonJS module too
-if `exports`
-  `exports.tokenize = tokenize`
+# Turns a long string into a stream of tokens
+tokenize: source =>
+  length: source.length
+  pos: 0
+  while pos < length
+    [type, match, consume] = match_token(source.substr(pos, length))
+    tokens.push([type, match])
+    pos += match.length
+  analyse(tokens)
+
+(exports ? this).CoffeePot: {
+  tokenize: tokenize
+}

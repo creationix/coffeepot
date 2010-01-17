@@ -1,0 +1,3 @@
+(exports ? this).CoffeePot: {
+  generate: =>
+}

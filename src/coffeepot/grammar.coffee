@@ -1,8 +1,10 @@
-# Load the helpers
-process.mixin(require('coffeepot/grammar_helper'))
+CoffeePot ?= {}
+Helper: CoffeePot.Helper ? require('coffeepot/helper').CoffeePot.Helper
+g: Helper.non_terminal
+p: Helper.option
 
-# Grammar for the CoffeeScript language's parser
-Grammar: define({
+# grammar for the CoffeeScript language's parser
+grammar: Helper.define({
 
   # Any list of expressions or method body, seperated by line breaks or semis.
   Block: g([
@@ -122,5 +124,6 @@ Grammar: define({
 
 })
 
-(this.exports || this.window).grammar = Grammar
-
+(exports ? this).CoffeePot: {
+  grammar: grammar
+}
