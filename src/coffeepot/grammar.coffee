@@ -1,27 +1,5 @@
-Grammar: {}
-
-zip: pairs =>
-  puts(inspect(pairs))
-  result: {}
-  for key, value in pairs
-    result[key] = value
-  result
-
-# Helper for non-terminal definitions
-g: options, fn =>
-  non_terminal: {
-    options: options
-  }
-  non_terminal.filter: fn if fn
-  non_terminal
-
-# Helper to enable passing anonymous functions to patterns
-p: pattern, fn =>
-  option: {
-    pattern: pattern
-  }
-  option.filter: fn if fn
-  option
+# Load the helpers
+process.mixin(require('coffeepot/grammar_helper'))
 
 # Grammar for the CoffeeScript language's parser
 Grammar: {
@@ -91,13 +69,14 @@ Grammar: {
   ]) name => [name, this[0], this[2]]
 
   Function: g([
-    p("ROCKET Expression") => [[], this[1]]
     p("ArgsList ROCKET Expression") => [this[0], this[2]]
+    p("ArgsList ROCKET NEWLINE INDENT Block DEDENT") => [this[0], this[4]]
   ]) name => [name, this[0], this[1]]
 
   ArgsList: g([
     p("ID , ArgsList") => [this[0]].concat(this[2])
     p("ID")
+    p("")
   ]) => this
 
   Binop: g([
@@ -141,9 +120,37 @@ Grammar: {
     p("NEWLINE")
   ]) => this
 
-
 }
+
+
+
+# Finds the firsts for each non-terminal
+find_firsts: name, non_terminal =>
+  return non_terminal.firsts if non_terminal.firsts
+  non_terminal.firsts: {}
+  for option in non_terminal.options
+    option.firsts: {}
+    pattern: option.pattern
+    if pattern.length > 0
+      first: pattern[0]
+      if Grammar[first]
+        for name, exists of find_firsts(name, Grammar[first])
+          non_terminal.firsts[name] = exists
+          option.firsts[name] = exists
+      else
+        non_terminal.firsts[first] = true
+        option.firsts[first] = true
+  non_terminal.firsts
+
+for name, non_terminal of Grammar
+  find_firsts(name, non_terminal)
+# puts(name)
+# puts(JSON.stringify(non_terminal.firsts))
+# for option in non_terminal.options
+#   puts("  " + option.pattern)
+#   puts("  " + JSON.stringify(option.firsts))
 
 # Works as CommonJS module too
 if `exports`
   `exports.grammar = Grammar`
+

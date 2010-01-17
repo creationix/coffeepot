@@ -1,18 +1,9 @@
 CoffeePot: `exports`
 process.mixin(CoffeePot, require("coffeepot/grammar"))
 process.mixin(CoffeePot, require("coffeepot/lexer"))
-process.mixin(CoffeePot, require("coffeepot/parser"))
+# process.mixin(CoffeePot, require("coffeepot/parser"))
 
-debug: false
-
-# Splits a non-terminal pattern into an array of plain strings.
-split: pattern =>
-  pattern = pattern.substr(1, pattern.length - 2)
-  if pattern == ""
-    []
-  else
-    pattern.match(/('[^']+'|\S+)/g).map() item =>
-      item.replace(/'/g, '')
+debug: true
 
 # Helpers to memoize the functions
 cache: {}
@@ -40,25 +31,29 @@ memoize: fn =>
 parse: tokens =>
   grammar: CoffeePot.grammar
 
+  prefix: offset =>
+    token: tokens[offset][0] + ""
+    num: offset + ""
+    "\n" + num + " " + token + "           ".substr(token.length + num.length)
+
   # Tries to match a non-terminal at a specified location in the token stream
   try_nonterminal: memoize() name, offset =>
-    puts("non-terminal: " + name + " " + offset) if debug
+    print(prefix(offset) + name) if debug
 
     match: null
     non_terminal: grammar[name]
 
     # Try all the options in the non-terminal's definition
     for option in non_terminal.options
-      pattern_string: "[" + option.pattern + "]"
-      result: try_pattern(pattern_string, offset)
-      unlock(offset, pattern_string)
+      continue unless option.firsts[tokens[offset][0]]
+      result: try_pattern(option.pattern, offset)
+      print(" o")
       if result
         token: if option.filter
           option.filter.call(result[0])
         else
           result[0]
         if !match || result.offset > match.longest
-          puts("Matched " + offset + " " + name + " to " + JSON.stringify(token)) if debug
           match: {
             longest: token.offset
             token: token
@@ -66,21 +61,17 @@ parse: tokens =>
           }
 
     return unless match
+    print(" O")
     final: if non_terminal.filter
       match.token: non_terminal.filter.call(match.token, name)
     else
       [name, match.token]
-    puts("Longest match " + offset + " " + name + " is " + JSON.stringify(match.token)) if debug
+    print(" " + JSON.stringify(final)) if debug
     [final, match.offset]
 
   # Try's to match a single line in the grammar
-  try_pattern: memoize() pattern_string, offset =>
-    puts("  pattern: " + pattern_string + " " + offset) if debug
-
-    # Prevent infinite recursion
-    lock(offset, pattern_string)
-
-    pattern: split(pattern_string)
+  try_pattern: memoize() pattern, offset =>
+    print(prefix(offset) + "  " + pattern) if debug
 
     # While loops don't mess with scope, so they work well here.
     pos: 0
@@ -88,7 +79,7 @@ parse: tokens =>
     contents: []
     while pos < length
       return unless result: try_item(pattern[pos], offset)
-      puts ("    ACCEPT: " + pattern[pos] + " " + JSON.stringify(result)) if debug
+      print(" .") if debug
       offset = result[1]
       contents.push(result[0])
       pos++
@@ -96,9 +87,8 @@ parse: tokens =>
 
   # Tries to match a single item in the grammar
   try_item: memoize() item, offset =>
+    print(prefix(offset) + "    " + item) if debug
     return if offset >= tokens.length
-    puts("    item: " + item + " against " + tokens[offset][0] + " " + offset) if debug
-    # Match nested non-terminals
     if grammar[item]
       return try_nonterminal(item, offset)
     else if item == tokens[offset][0]
