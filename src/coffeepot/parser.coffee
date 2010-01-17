@@ -59,12 +59,12 @@ parse: tokens =>
 
     return unless match
     print(" O") if debug
-    final: if non_terminal.filter
+    node: if non_terminal.filter
       match.token: non_terminal.filter.call(match.token, name)
     else
       [name, match.token]
-    print(" " + JSON.stringify(final)) if debug
-    [final, match.offset]
+    print(" " + JSON.stringify(node)) if debug
+    [node, match.offset]
 
   # Try's to match a single line in the grammar
   try_pattern: pattern, offset =>
