@@ -29,3 +29,27 @@ Helper.p: pattern_string, fn =>
   option
 
 
+Helper.define: grammar =>
+  # Finds the firsts for each non-terminal
+  find_firsts: name, non_terminal =>
+    return non_terminal.firsts if non_terminal.firsts
+    non_terminal.firsts: {}
+    for option in non_terminal.options
+      option.firsts: {}
+      pattern: option.pattern
+      if pattern.length > 0
+        first: pattern[0]
+        if grammar[first]
+          for name, exists of find_firsts(name, grammar[first])
+            non_terminal.firsts[name] = exists
+            option.firsts[name] = exists
+        else
+          non_terminal.firsts[first] = true
+          option.firsts[first] = true
+    non_terminal.firsts
+
+  for name, non_terminal of grammar
+    find_firsts(name, non_terminal)
+  grammar
+
+

@@ -2,7 +2,7 @@
 process.mixin(require('coffeepot/grammar_helper'))
 
 # Grammar for the CoffeeScript language's parser
-Grammar: {
+Grammar: define({
 
   # Any list of expressions or method body, seperated by line breaks or semis.
   Block: g([
@@ -120,37 +120,7 @@ Grammar: {
     p("NEWLINE")
   ]) => this
 
-}
+})
 
-
-
-# Finds the firsts for each non-terminal
-find_firsts: name, non_terminal =>
-  return non_terminal.firsts if non_terminal.firsts
-  non_terminal.firsts: {}
-  for option in non_terminal.options
-    option.firsts: {}
-    pattern: option.pattern
-    if pattern.length > 0
-      first: pattern[0]
-      if Grammar[first]
-        for name, exists of find_firsts(name, Grammar[first])
-          non_terminal.firsts[name] = exists
-          option.firsts[name] = exists
-      else
-        non_terminal.firsts[first] = true
-        option.firsts[first] = true
-  non_terminal.firsts
-
-for name, non_terminal of Grammar
-  find_firsts(name, non_terminal)
-# puts(name)
-# puts(JSON.stringify(non_terminal.firsts))
-# for option in non_terminal.options
-#   puts("  " + option.pattern)
-#   puts("  " + JSON.stringify(option.firsts))
-
-# Works as CommonJS module too
-if `exports`
-  `exports.grammar = Grammar`
+(this.exports || this.window).grammar = Grammar
 
