@@ -20,15 +20,15 @@ calc_firsts: grammar =>
       pattern: option.pattern
       continue if ignore[pattern]
       if pattern.length == 0
-        non_terminal.firsts["~"] = true
-        option.firsts["~"] = true
+        non_terminal.firsts["EMPTY"] = true
+        option.firsts["EMPTY"] = true
       else
         check_first: index =>
           first: pattern[index]
           if grammar[first]
             ignore[pattern] = true
             for name, exists of find_firsts(name, grammar[first])
-              if name == "~" and index < pattern.length - 1
+              if name == "EMPTY" and index < pattern.length - 1
                 check_first(index + 1)
               else
                 non_terminal.firsts[name] = true
@@ -52,6 +52,61 @@ calc_firsts: grammar =>
       sum += Object.keys(non_terminal.firsts).length
       for option in non_terminal.options
         sum += Object.keys(option.firsts).length
+
+# Takes a grammer object and calculates the FOLLOW set for it
+calc_follows: grammar =>
+  # Initialize all the FOLLOW objects
+  for name, non_terminal of grammar
+    non_terminal.follows = {}
+    for option in non_terminal.options
+      option.follows = {}
+
+  # The start symbol is allowed to have the END token FOLLOW it.
+  grammar.Start.follows["END"] = true
+
+  more: true
+
+  find_follows: group =>
+
+    # This is called when a follow is found
+    mixin: follows =>
+      for key, value of follows
+        if !(key == "EMPTY" or grammar[group].follows[key])
+          # puts("    " + group + " -> " + key)
+          more: true
+          grammar[group].follows[key] = true
+
+    for name, non_terminal of grammar
+      for option in non_terminal.options
+        pattern: option.pattern
+        index: -1
+        while (index: pattern.slice(index + 1).indexOf(group)) >= 0
+          current: pattern[index]
+          # puts("Checking follows for: " + group + " in \"" + pattern.join(" ") + "\"")
+          if index < pattern.length - 1
+            next: pattern[index + 1]
+            if grammar[next]
+              # puts("Found non-terminal follower: FIRST(" + next + ")")
+              mixin(grammar[next].firsts)
+              if grammar[next].firsts["EMPTY"]
+                # puts("Found chained group follower: FOLLOW(" + next + ")")
+                mixin(grammar[next].follows)
+            else
+              # puts("Found terminal follower: " + next)
+              obj: {}
+              obj[next] = true
+              mixin(obj)
+          else
+            # puts("Found group follower: FOLLOW(" + name + ")")
+            mixin(grammar[name].follows)
+
+          index++
+
+  while more
+    # puts("\nSTART")
+    more: false
+    for name, non_terminal of grammar
+      find_follows(name)
 
 
 Helper: {
