@@ -33,6 +33,7 @@ Generators: {
 
 
 render: node =>
+  return "" unless node
   [name, args...] = node
   if Generators[name]
     Generators[name].apply(render, args)
