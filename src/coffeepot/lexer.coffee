@@ -34,7 +34,7 @@ Containers: [
 # function.
 Tokens: {
   # These are taken literally
-  CODE: /^([\(\)\[\]\{\}:;,?])/
+  CODE: /^([\(\)\[\]\{\}:;,])/
 
   NEWLINE: /^(\n)/
   WS: /^([ \t]+)/
@@ -42,7 +42,7 @@ Tokens: {
   ID: /^([a-z_$][a-z0-9_$]*)/i
   PROPERTY: /^(\.[a-z_$][a-z0-9_$]*)/i
   ROCKET: /^(=>)/
-  OPERATOR: /^([+\*&|\/\-%=<>!]+)/
+  OPERATOR: /^([+\*&|\/\-%=<>!?]+)/
   DOTDOTDOT: /^(\.\.\.)/
   DOTDOT: /^(\.\.)/
 
