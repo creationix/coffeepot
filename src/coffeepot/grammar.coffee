@@ -7,6 +7,10 @@ p: Helper.option
 # grammar for the CoffeeScript language's parser
 grammar: Helper.define({
 
+  Start: g([
+    p("Block")
+  ]) => this[0]
+
   # Any list of expressions or method body, seperated by line breaks or semis.
   Block: g([
     p("Statement Terminator Block") => [this[0]].concat(this[2][1])
@@ -124,5 +128,16 @@ grammar: Helper.define({
   ]) => this
 
 })
+
+# process.mixin(require('sys'))
+# puts("\nFirsts:\n")
+# for name, non_terminal of grammar
+#   puts(name + " => " + Object.keys(non_terminal.firsts).join(" "))
+#   for option in non_terminal.options
+#     puts("  \"" + option.pattern.join(" ") + "\" => " + Object.keys(option.firsts).join(" "))
+#
+# puts("\nFollows:\n")
+# for name, non_terminal of grammar
+#   puts(name + " => " + Object.keys(non_terminal.follows).join(" "))
 
 CoffeePot.grammar: grammar
