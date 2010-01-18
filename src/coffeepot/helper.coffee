@@ -35,16 +35,24 @@ Helper: {
         option.firsts ?= {}
         pattern: option.pattern
         continue if ignore[pattern]
-        if pattern.length > 0
-          first: pattern[0]
-          if grammar[first]
-            ignore[pattern] = true
-            for name, exists of find_firsts(name, grammar[first])
-              non_terminal.firsts[name] = exists
-              option.firsts[name] = exists
-          else
-            non_terminal.firsts[first] = true
-            option.firsts[first] = true
+        if pattern.length == 0
+          non_terminal.firsts["~"] = true
+          option.firsts["~"] = true
+        else
+          check_first: index =>
+            first: pattern[index]
+            if grammar[first]
+              ignore[pattern] = true
+              for name, exists of find_firsts(name, grammar[first])
+                if name == "~" and index < pattern.length - 1
+                  check_first(index + 1)
+                else
+                  non_terminal.firsts[name] = true
+                  option.firsts[name] = true
+            else
+              non_terminal.firsts[first] = true
+              option.firsts[first] = true
+          check_first(0)
       non_terminal.firsts
 
     # Keep running till no new firsts are found
