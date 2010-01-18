@@ -4,33 +4,15 @@ grammar: CoffeePot.grammar ? require('coffeepot/grammar').CoffeePot.grammar
 
 debug: false
 
-# Helpers to memoize the functions
-cache: {}
-locks: {}
-store: offset, name, value =>
-  cache[offset] = [] unless cache[offset]
-  cache[offset][name] = value
-check: offset, name =>
-  # return true if locks[offset+name]
-  cache[offset] && cache[offset].hasOwnProperty(name)
-get: offset, name =>
-  # return false if locks[offset+name]
-  cache[offset][name]
-lock: offset, name =>
-  locks[offset+name] = true
-unlock: offset, name =>
-  delete locks[offset+name]
-
-memoize: fn =>
-  memoized: name, offset =>
-    return get(offset, name) if check(offset, name)
-    store(offset, name, fn(name, offset))
-
 # Recursive decent grammar interpreter!
 parse: tokens =>
 
+  # Helper for debug lines
   prefix: offset =>
-    token: tokens[offset][0] + ""
+    token: if offset < tokens.length
+      tokens[offset][0] + ""
+    else
+      ""
     num: offset + ""
     "\n" + num + " " + token + "           ".substr(token.length + num.length)
 
@@ -38,61 +20,60 @@ parse: tokens =>
   try_nonterminal: name, offset =>
     print(prefix(offset) + name) if debug
 
-    match: null
-    non_terminal: grammar[name]
-
-    # Try all the options in the non-terminal's definition
-    for option in non_terminal.options
-      continue unless option.firsts[tokens[offset][0]]
+    # Find the option with the longest match
+    node: false
+    filter: false
+    new_offset: offset - 1
+    next_token: tokens[offset][0]
+    for option in grammar[name].options when option.firsts[next_token]
       result: try_pattern(option.pattern, offset)
-      print(" o") if debug
-      if result
-        token: if option.filter
-          option.filter.call(result[0])
-        else
-          result[0]
-        if !match || result.offset > match.longest
-          match: {
-            longest: token.offset
-            token: token
-            offset: result[1]
-          }
+      if result and result.offset > new_offset
+        new_offset: result.offset
+        node: result.node
+        filter: option.filter
 
-    return unless match
-    print(" O") if debug
-    node: if non_terminal.filter
-      match.token: non_terminal.filter.call(match.token, name)
+    # Fail if there are no matches
+    return unless node
+
+    # Apply filters
+    node: filter.call(node) if filter
+    node: if grammar[name].filter
+      grammar[name].filter.call(node, name)
     else
-      [name, match.token]
-    print(" " + JSON.stringify(node)) if debug
-    [node, match.offset]
+      [name, node]
+
+    print(prefix(offset) + JSON.stringify(node)) if debug
+    { node: node, offset: new_offset }
 
   # Try's to match a single line in the grammar
   try_pattern: pattern, offset =>
-    print(prefix(offset) + "  " + pattern) if debug
+    print(prefix(offset) + "  " + pattern.join(" ")) if debug
 
-    # While loops don't mess with scope, so they work well here.
-    pos: 0
-    length: pattern.length
     contents: []
-    while pos < length
-      return unless result: try_item(pattern[pos], offset)
-      print(" .") if debug
-      offset = result[1]
-      contents.push(result[0])
-      pos++
-    [contents, offset]
+    for item in pattern
+      return unless result: try_item(item, offset)
+      offset = result.offset
+      contents.push(result.node)
+
+    print(prefix(offset) + "  " + JSON.stringify(contents)) if debug
+    { node: contents, offset: offset }
 
   # Tries to match a single item in the grammar
   try_item: item, offset =>
     print(prefix(offset) + "    " + item) if debug
     return if offset >= tokens.length
-    if grammar[item]
-      return try_nonterminal(item, offset)
+    result: if grammar[item]
+      try_nonterminal(item, offset)
     else if item == tokens[offset][0]
-        return [tokens[offset], offset + 1]
+      { node: tokens[offset], offset: offset + 1 }
+    return unless result
+    print(prefix(offset) + "    " + JSON.stringify(result.node)) if debug
+    result
 
-  try_nonterminal("Block", 0)[0]
+  if tree: try_nonterminal("Start", 0)
+    tree.node
+  else
+    false
 
 CoffeePot.parse: parse
 
