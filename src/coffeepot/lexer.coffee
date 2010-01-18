@@ -1,5 +1,6 @@
 root: exports ? this
 CoffeePot: (root.CoffeePot ?= {})
+Helper: CoffeePot.Helper ? require('coffeepot/helper').CoffeePot.Helper
 
 Booleans: [
   "true", "false"
@@ -142,15 +143,7 @@ match_token: code =>
     throw new Error("Unknown Token: " + JSON.stringify(code.split("\n")[0]))
 
 strip_heredoc: raw =>
-  lines: raw.substr(4, raw.length - 7).split("\n")
-  min: lines[0].match(/^\s*/)[0].length
-  for line in lines
-    if (indent: line.match(/^\s*/)[0].length) < min
-      min = indent
-  lines = lines.map() line =>
-    line.substr(min, line.length)
-  lines.pop()
-  return lines.join("\n")
+  lines: Helper.block-trim(raw.substr(4, raw.length - 7))
 
 # Take a raw token stream and strip out unneeded whitespace tokens and insert
 # indent/dedent tokens. By using a stack of indentation levels, we can support
