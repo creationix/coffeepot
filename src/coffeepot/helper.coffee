@@ -49,6 +49,20 @@ Helper: {
     for name, non_terminal of grammar
       find_firsts(name, non_terminal)
     grammar
+
+  # Trims leading whitespace from a block of text
+  block_trim: text =>
+    lines: text.split("\n")
+    min: null
+    for line in lines
+      continue unless (match: line.match(/^(\s*)\S/))
+      indent: match[1].length
+      if min == null or indent < min
+        min: indent
+    lines: lines.map() line =>
+      line.substr(min, line.length)
+    lines.join("\n")
+
 }
 
 CoffeePot.Helper = Helper
