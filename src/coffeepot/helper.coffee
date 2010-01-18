@@ -58,8 +58,6 @@ calc_follows: grammar =>
   # Initialize all the FOLLOW objects
   for name, non_terminal of grammar
     non_terminal.follows = {}
-    for option in non_terminal.options
-      option.follows = {}
 
   # The start symbol is allowed to have the END token FOLLOW it.
   grammar.Start.follows["END"] = true
