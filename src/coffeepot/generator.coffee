@@ -7,9 +7,10 @@ Generators: {
     self: this
     self.vars: {}
     content: contents.map() statement =>
-      self(statement) + ";\n"
+      self(statement) + ";"
     names: for name, exists of self.vars
       name
+    content = content.join("\n")
     if names.length > 0
       "var " + names.join(", ") + ";\n" + content
     else
