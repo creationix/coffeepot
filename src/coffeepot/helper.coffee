@@ -30,14 +30,15 @@ Helper: {
   define: grammar =>
     # Finds the firsts for each non-terminal
     find_firsts: name, non_terminal =>
-      return non_terminal.firsts if non_terminal.firsts
-      non_terminal.firsts: {}
+      non_terminal.firsts ?= {}
       for option in non_terminal.options
-        option.firsts: {}
+        option.firsts ?= {}
         pattern: option.pattern
+        continue if ignore[pattern]
         if pattern.length > 0
           first: pattern[0]
           if grammar[first]
+            ignore[pattern] = true
             for name, exists of find_firsts(name, grammar[first])
               non_terminal.firsts[name] = exists
               option.firsts[name] = exists
@@ -46,8 +47,19 @@ Helper: {
             option.firsts[first] = true
       non_terminal.firsts
 
-    for name, non_terminal of grammar
-      find_firsts(name, non_terminal)
+    # Keep running till no new firsts are found
+    old_sum: -1
+    sum: 0
+    while (old_sum < sum)
+      for name, non_terminal of grammar
+        ignore: {}
+        find_firsts(name, non_terminal)
+      old_sum: sum
+      sum: 0
+      for name, non_terminal of grammar
+        sum += Object.keys(non_terminal.firsts).length
+        for option in non_terminal.options
+          sum += Object.keys(option.firsts).length
     grammar
 
   # Trims leading whitespace from a block of text
