@@ -5,7 +5,7 @@ block_vars: []
 Generators: {
 
   Start: block =>
-    "(function (){" + this(block) + "}());"
+    "(function () {" + this(block) + "}());"
 
   Block: contents =>
     self: this
