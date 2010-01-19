@@ -34,7 +34,7 @@ Containers: [
 # function.
 Tokens: {
   # These are taken literally
-  CODE: /^([\(\)\[\]\{\}:;,])/
+  CODE: /^([\(\)\[\]\{\}:=;,])/
 
   NEWLINE: /^(\n)/
   WS: /^([ \t]+)/
@@ -143,7 +143,7 @@ match_token: code =>
     throw new Error("Unknown Token: " + JSON.stringify(code.split("\n")[0]))
 
 strip_heredoc: raw =>
-  lines: Helper.block-trim(raw.substr(4, raw.length - 7))
+  lines: Helper.block_trim(raw.substr(4, raw.length - 7))
 
 # Take a raw token stream and strip out unneeded whitespace tokens and insert
 # indent/dedent tokens. By using a stack of indentation levels, we can support
@@ -153,7 +153,7 @@ analyse: tokens =>
   result: []
   stack: [""]
   for token in tokens
-    if last and last[0] == "NEWLINE"
+    if last and last[0] == "NEWLINE" and token[0] != "NEWLINE"
       top: stack[stack.length - 1]
       indent: if token[0] == "WS"
         token[1]
@@ -165,6 +165,7 @@ analyse: tokens =>
         if indent != top.substr(0, indent.length)
           throw new Error("Indentation mismatch")
         result.push(["DEDENT", top])
+        result.push(["NEWLINE"])
         stack.pop()
         top: stack[stack.length - 1]
 
@@ -193,8 +194,12 @@ analyse: tokens =>
 
         # Convert strings to their raw value
         if token[0] == "STRING"
-          token[1] = token[1].replace(/\n/g, "\\n")
-          token[1] = JSON.parse(token[1])
+          token[1] =
+          token[1]: try
+            token[1] = JSON.parse(token[1].replace(/\n/g, "\\n"))
+          catch e
+
+            false
 
         # Strip leading whitespace off heredoc blocks
         if token[0] == "HEREDOC"
@@ -226,6 +231,7 @@ CoffeePot.tokenize: source =>
   source += "\n"
   length: source.length
   pos: 0
+  tokens: []
   while pos < length
     [type, match, consume] = match_token(source.substr(pos, length))
     tokens.push([type, match])
