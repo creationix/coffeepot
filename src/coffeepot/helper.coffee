@@ -49,9 +49,9 @@ calc_firsts: grammar =>
     old_sum: sum
     sum: 0
     for name, non_terminal of grammar
-      sum += Object.keys(non_terminal.firsts).length
+      sum += Helper.keys(non_terminal.firsts).length
       for option in non_terminal.options
-        sum += Object.keys(option.firsts).length
+        sum += Helper.keys(option.firsts).length
 
 # Takes a grammer object and calculates the FOLLOW set for it
 calc_follows: grammar =>
@@ -144,5 +144,9 @@ Helper: {
     lines.join("\n")
 
 }
+
+Helper.keys = Object.keys ? obj =>
+  key for key, value of obj
+
 
 CoffeePot.Helper = Helper

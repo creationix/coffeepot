@@ -144,12 +144,12 @@ grammar: Helper.define({
 # process.mixin(require('sys'))
 # puts("\nFirsts:\n")
 # for name, non_terminal of grammar
-#   puts(name + " => " + Object.keys(non_terminal.firsts).join(" "))
+#   puts(name + " => " + Helper.keys(non_terminal.firsts).join(" "))
 #   for option in non_terminal.options
-#     puts("  \"" + option.pattern.join(" ") + "\" => " + Object.keys(option.firsts).join(" "))
+#     puts("  \"" + option.pattern.join(" ") + "\" => " + Helper.keys(option.firsts).join(" "))
 #
 # puts("\nFollows:\n")
 # for name, non_terminal of grammar
-#   puts(name + " => " + Object.keys(non_terminal.follows).join(" "))
+#   puts(name + " => " + Helper.keys(non_terminal.follows).join(" "))
 
 CoffeePot.grammar: grammar
