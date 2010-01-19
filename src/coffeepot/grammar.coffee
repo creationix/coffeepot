@@ -83,6 +83,7 @@ grammar: Helper.define({
   # Assignment to a variable.
   Assign: g([
     p("Source : Expression")
+    p("Source = Expression")
   ]) name => [name, this[0], this[2]]
 
   Function: g([
