@@ -1,15 +1,20 @@
 root: exports ? this
 CoffeePot: (root.CoffeePot ?= {})
+block_vars: []
 
 Generators: {
 
+  Start: block =>
+    "(function (){" + this(block) + "}());"
+
   Block: contents =>
     self: this
-    self.vars: {}
+    block_vars.push({})
     last_comment: false
     content: contents.map() statement =>
       type: statement[0]
       content: self(statement)
+
       content: switch type
         when "COMMENT"
           (if last_comment then "" else "\n") + content
@@ -19,18 +24,24 @@ Generators: {
           content + ";"
       last_comment: type == "COMMENT"
       content
-    names: for name, exists of self.vars
-      name
-    content = content.join("\n")
+    content: content.join("\n")
+    names: name for name, exists of block_vars.pop()
+    puts(inspect(names))
     if names.length > 0
-      "var " + names.join(", ") + ";\n" + content
-    else
-      content
+      content: "var " + names.join(", ") + ";\n" + content
+    content: "\n" + (("  " + line) for line in content.split("\n")).join("\n") + "\n"
+    puts(JSON.stringify(content))
+    content
+
 
   # ["Function",[["ID","x"]],["Binop",["OPERATOR","*"],["ID","x"],["ID","x"]]];
-  Function: args, expression, name =>
+  Function: args, content, name =>
     name ?= ""
-    "function " + name + "(" + (arg[1] for arg in args).join(", ") + ") { " + this(expression) + "; }"
+    content: if content[0] == "Block"
+      this(content)
+    else
+      " " + this(content) + "; "
+    "function " + name + "(" + (arg[1] for arg in args).join(", ") + ") {" + content + "}"
 
   COMMENT: content => "//" + content
 
@@ -42,9 +53,14 @@ Generators: {
       name: id[1]
       if exp[0] == "Function"
         exp[3] = name
-      this.vars[name] = true
+      block_vars[block_vars.length - 1][name] = true
     this(id) + " = " + this(exp)
 
+  Source: parts =>
+    (part[1] for part in parts).join("")
+  Compound: parts =>
+    self: this
+    (this(part) for part in parts).join("")
 
   Binop: op, exp1, exp2 =>
     first: this(exp1)

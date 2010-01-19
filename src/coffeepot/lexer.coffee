@@ -201,6 +201,9 @@ analyse: tokens =>
           token[1] = strip_heredoc(token[1])
           token[0] = "STRING"
 
+        if token[0] == "COMMENT"
+          token[1] = token[1].substr(1, token[1].length)
+
         if token[0] == "CODE"
           token = [token[1]]
         if Containers.indexOf(token[0]) < 0

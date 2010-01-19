@@ -126,7 +126,7 @@ Helper: {
 
   define: grammar =>
     calc_firsts(grammar)
-    calc_follows(grammar)
+    # calc_follows(grammar)
     grammar
 
 

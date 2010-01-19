@@ -8,8 +8,8 @@ p: Helper.option
 grammar: Helper.define({
 
   Start: g([
-    p("Block")
-  ]) => this[0]
+    p("Block") => this[0]
+  ])
 
   # Any list of expressions or method body, seperated by line breaks or semis.
   Block: g([
@@ -26,7 +26,8 @@ grammar: Helper.define({
     p("COMMENT")
     p("PostCond")
     p("Expression")
-  ]) name => this[0]
+    p("Compound")
+  ]) => this[0]
 
   PostCond: g([
     p("Expression if Expression") => [this[2], this[0]]
@@ -40,25 +41,28 @@ grammar: Helper.define({
     p("Assign")
     p("Function")
     p("Call")
-    p("Property")
+    p("Source")
     p("Value")
+    p("( Expression )") => [this[1]]
   ]) name => this[0]
 
-  Call: g([
-    p("Source PROPERTY ( Args )") => [this[0], this[1], this[3]]
-    p("Source PROPERTY ( )") => [this[0], this[1], null]
-    p("ID ( Args )") => [null, this[0], this[2]]
-    p("ID ( )") => [null, this[0], null]
+  Compound: g([
+    p("Expression Chain") => [this[0]].concat(this[1][1])
   ])
 
-  Property: g([
-    p("Source PROPERTY")
+  Chain: g([
+    p("PROPERTY")
+    p("PROPERTY Chain") => [this[0]].concat(this[1][1])
+  ])
+
+  Call: g([
+    p("Chain ( )") => [this[0], []]
   ])
 
   Source: g([
-    p("ID")
-    p("( Expression )")
-  ]) name => this[0]
+    p("ID") => this[0]
+    p("ID Chain") => ["Source", [this[0]].concat(this[1][1])]
+  ]) => this
 
   Args: g([
     p("Expression , Args") => [this[0]].concat(this[2])
@@ -73,6 +77,7 @@ grammar: Helper.define({
   # Assignment to a variable.
   Assign: g([
     p("ID ':' Expression")
+    p("BlockAssign")
   ]) name => [name, this[0], this[2]]
 
   Function: g([

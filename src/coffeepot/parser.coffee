@@ -9,10 +9,7 @@ parse: tokens =>
 
   # Helper for debug lines
   prefix: offset =>
-    token: if offset < tokens.length
-      tokens[offset][0] + ""
-    else
-      ""
+    token: if offset < tokens.length then tokens[offset][0] + "" else ""
     num: offset + ""
     "\n" + num + " " + token + "           ".substr(token.length + num.length)
 
