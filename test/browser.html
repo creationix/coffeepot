@@ -1,52 +1,118 @@
 <html>
-	<head>
-		<title>CoffeeScript compiler in the browser</title>
-		<script type="text/javascript" src="../build/coffeepot.js"></script>
-		<script type="text/javascript">
-			function compile() {
-				var form = document.getElementById("form");
-				var result = CoffeePot.compile(form.code.value);
-				console.log(result);
-				form.tokens.value = JSON.stringify(result.tokens);
-				form.tree.value = JSON.stringify(result.tree);
-				form.js.value = result.js;
-			}
-		</script>
-		<style type="text/css">
-			label {
-				display: block;
-				width: 100%;
-				font-size: 24px;
-				font-family: monaco;
-			}
-			textarea {
-				font-family: monaco;
-				font-size: 16px;
-				width: 100%;
-				height: 150px;
+  <head>
+    <title>CoffeeScript compiler in the browser</title>
+    <script type="text/javascript" src="coffeepot.js"></script>
+    <script type="text/coffeescript">
+      # Compile the contents of the code box and show all output
+      compile: =>
 
-			}
-		</style>
-	</head>
-	<body onload="compile();">
-		<form id="form" onsubmit="compile();return false;">
-			<p>
-				<label for="code">CoffeeScript Code</label>
-				<textarea id="code" name="code">double: x => x * x</textarea>
-			</p>
-			<p>
-				<label for="tokens">Tokens</label>
-				<textarea id="tokens" name="tokens"></textarea>
-			</p>
-			<p>
-				<label for="tree">Abstract Syntax Tree</label>
-				<textarea id="tree" name="tree"></textarea>
-			<p>
-			</p>
-				<label for="js">JavaScript Output</label>
-				<textarea id="js" name="js"></textarea>
-			</p>
-			<input type="submit" value="Compile!" />
-		</form>
-	</body>
+        # Get data from the form element
+        form: document.getElementById("form")
+        code: form.code.value
+
+        # Do a three step compile
+        tokens: CoffeePot.tokenize(code)
+        tree: CoffeePot.parse(tokens)
+        js: CoffeePot.generate(tree)
+
+        # Put the result back in the form
+        form.tokens.value = JSON.stringify(tokens)
+        form.tree.value = JSON.stringify(tree)
+        form.js.value = js
+
+      # Compile on page load
+      this.compile = compile
+      window.onload = compile
+    </script>
+    <script type="text/javascript">
+      (function () {
+        var compile;
+
+        // Compile the contents of the code box and show all output
+        compile = function compile() {
+          var form, code, tokens, tree, js;
+
+          // Get data from the form element
+          form = document.getElementById("form");
+          code = form.code.value;
+
+          // Do a three step compile
+          tokens = CoffeePot.tokenize(code);
+          tree = CoffeePot.parse(tokens);
+          js = CoffeePot.generate(tree);
+
+          // Put the result back in the form
+          form.tokens.value = JSON.stringify(tokens);
+          form.tree.value = JSON.stringify(tree);
+          form.js.value = js;
+        };
+
+        // Compile on page load
+        this.compile = compile;
+        window.onload = compile;
+      }());
+    </script>
+    <style type="text/css">
+      label {
+        display: block;
+        font-size: 24px;
+        font-family: monaco;
+      }
+      textarea {
+        font-family: monaco;
+        font-size: 16px;
+        height: 300px;
+        width: 100%;
+
+      }
+      table {
+        width: 100%;
+      }
+      #go {
+        display:block;
+        width: 200px;
+        font-weight: bold;
+        margin: 10px auto;
+        border: 1px solid #000;
+      }
+    </style>
+  </head>
+  <body>
+    <form id="form" onsubmit="compile();return false;">
+      <table><tr><td>
+        <label for="code">CoffeeScript Code</label>
+        <textarea id="code" name="code"># Assignment:
+number: 42
+opposite_day: true
+
+# Conditions:
+number: -42 if opposite_day
+
+# Functions:
+square: x => x * x
+
+# Arrays:
+list: [1, 2, 3, 4, 5]
+
+# Objects:
+math: {
+  root:   Math.sqrt
+  square: square
+  cube:   x => x * square(x)
+}
+</textarea>
+      </td><td>
+        <label for="js">JavaScript Output</label>
+        <textarea readonly="readonly" id="js" name="js"></textarea>
+      </td></tr><tr><td colspan="2">
+        <input id="go" type="submit" value="Compile!" />
+      </td></tr><tr><td>
+        <label for="tokens">Tokens</label>
+        <textarea readonly="readonly" id="tokens" name="tokens"></textarea>
+      </td><td>
+        <label for="tree">Abstract Syntax Tree</label>
+        <textarea readonly="readonly" id="tree" name="tree"></textarea>
+      </td></tr></table>
+    </form>
+  </body>
 </html>
