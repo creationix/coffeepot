@@ -26,11 +26,9 @@ Generators: {
       content
     content: content.join("\n")
     names: name for name, exists of block_vars.pop()
-    puts(inspect(names))
     if names.length > 0
       content: "var " + names.join(", ") + ";\n" + content
     content: "\n" + (("  " + line) for line in content.split("\n")).join("\n") + "\n"
-    puts(JSON.stringify(content))
     content
 
 
@@ -44,6 +42,7 @@ Generators: {
     "function " + name + "(" + (arg[1] for arg in args).join(", ") + ") {" + content + "}"
 
   COMMENT: content => "//" + content
+  STRING: content => JSON.stringify(content)
 
   If: condition, exp1, exp2 =>
     "if (" + this(condition) + ") { " + this(exp1) + "; }"
@@ -58,6 +57,15 @@ Generators: {
 
   Source: parts =>
     (part[1] for part in parts).join("")
+
+  Call: method, args =>
+    this(method) + "(" + this(args) + ")"
+
+  ExpressionList: items =>
+    self: this
+    (self(item) for item in items).join(", ")
+
+
   Compound: parts =>
     self: this
     (this(part) for part in parts).join("")

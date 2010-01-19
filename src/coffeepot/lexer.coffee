@@ -223,6 +223,7 @@ analyse: tokens =>
 
 # Turns a long string into a stream of tokens
 CoffeePot.tokenize: source =>
+  source += "\n"
   length: source.length
   pos: 0
   while pos < length

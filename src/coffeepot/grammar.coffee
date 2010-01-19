@@ -56,7 +56,13 @@ grammar: Helper.define({
   ])
 
   Call: g([
-    p("Chain ( )") => [this[0], []]
+    p("Source ( )") => [this[0], ["ExpressionList", []]]
+    p("Source ( ExpressionList )") => [this[0], this[2]]
+  ]) name => [name, this[0], this[1]]
+
+  ExpressionList: g([
+    p("Expression")
+    p("Expression , ExpressionList") => [this[0]].concat(this[2][1])
   ])
 
   Source: g([
@@ -70,25 +76,25 @@ grammar: Helper.define({
   ]) name => this
 
   Value: g([
-    p("ID")
+    p("Source")
     p("Literal")
   ]) name => this[0]
 
   # Assignment to a variable.
   Assign: g([
-    p("ID ':' Expression")
-    p("BlockAssign")
+    p("Source : Expression")
   ]) name => [name, this[0], this[2]]
 
   Function: g([
     p("ArgsList ROCKET Expression") => [this[0], this[2]]
-    p("ArgsList ROCKET NEWLINE INDENT Block DEDENT") => [this[0], this[4]]
+    p("ArgsList ROCKET NEWLINE INDENT Block NEWLINE DEDENT") => [this[0], this[4]]
+    p("ROCKET Expression") => [[], this[1]]
+    p("ROCKET NEWLINE INDENT Block NEWLINE DEDENT") => [[], this[3]]
   ]) name => [name, this[0], this[1]]
 
   ArgsList: g([
     p("ID , ArgsList") => [this[0]].concat(this[2])
     p("ID")
-    p("")
   ]) => this
 
   Binop: g([
