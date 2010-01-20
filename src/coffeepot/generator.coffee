@@ -7,6 +7,9 @@ Generators: {
   Start: block =>
     "(function () {" + this(block) + "}());"
 
+  Not: expr =>
+    "!(" + this(expr) + ")"
+
   Block: contents =>
     self: this
     block_vars.push({})

@@ -31,7 +31,7 @@ grammar: Helper.define({
 
   PostCond: g([
     p("Expression if Expression") => [this[2], this[0]]
-    p("Expression unless Expression") => [["Not", this[2], this[0]]]
+    p("Expression unless Expression") => [["Not", this[2]], this[0]]
   ]) name => ["If", this[0], this[1]]
 
   # All types of expressions in our language. The basic unit of CoffeeScript
