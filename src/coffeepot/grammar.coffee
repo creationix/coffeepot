@@ -5,7 +5,7 @@ g: Helper.non_terminal
 p: Helper.option
 
 # grammar for the CoffeeScript language's parser
-grammar: Helper.define({
+grammar: {
 
   Start: g([
     p("Block") => this[0]
@@ -139,17 +139,6 @@ grammar: Helper.define({
     p("NEWLINE")
   ]) => this
 
-})
-
-# process.mixin(require('sys'))
-# puts("\nFirsts:\n")
-# for name, non_terminal of grammar
-#   puts(name + " => " + Helper.keys(non_terminal.firsts).join(" "))
-#   for option in non_terminal.options
-#     puts("  \"" + option.pattern.join(" ") + "\" => " + Helper.keys(option.firsts).join(" "))
-#
-# puts("\nFollows:\n")
-# for name, non_terminal of grammar
-#   puts(name + " => " + Helper.keys(non_terminal.follows).join(" "))
+}
 
 CoffeePot.grammar: grammar
