@@ -5,7 +5,7 @@ grammar: CoffeePot.grammar ? require('coffeepot/grammar').CoffeePot.grammar
 debug: false
 
 # Recursive decent grammar interpreter!
-parse: tokens =>
+parse: tokens, start =>
 
   # Helper for debug lines
   prefix: offset =>
@@ -67,7 +67,7 @@ parse: tokens =>
     print(prefix(offset) + "    " + JSON.stringify(result.node)) if debug
     result
 
-  if tree: try_nonterminal("Start", 0)
+  if tree: try_nonterminal(start ? "Start", 0)
     tree.node
   else
     false
