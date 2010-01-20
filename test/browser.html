@@ -88,7 +88,7 @@
     <form id="form" onsubmit="compile();return false;">
       <table><tr><td>
         <label for="code">CoffeeScript Code</label>
-        <textarea id="code" name="code"># Assignment:
+        <textarea onkeyup="compile()" id="code" name="code"># Assignment:
 number: 42
 opposite_day: true
 
