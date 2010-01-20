@@ -4,29 +4,11 @@ CoffeePot: (root.CoffeePot ?= {})
 CoffeePot.grammar ?= require('coffeepot/grammar').CoffeePot.grammar
 Parser: require('jison').Parser
 
-# grammar: {
-#
-#   bnf: {
-#     Root: [
-#
-#
-#       ["Block", "return $$ = $1;"]
-#     ]
-#     one: [
-#       ["ONE more", "$$ = ['ONE', yytext, $2]"]
-#     ]
-#     more: [
-#       ["TWO", "$$ = [['ONE', yytext]]"]
-#       ["THREE", "$$ = [['TWO', yytext]]"]
-#       ["more more", "$$ = $1.concat($2)"]
-#     ]
-#   }
-# }
-
 bnf: {}
 for name, non_terminal of CoffeePot.grammar
   bnf[name] = []
   for option in non_terminal.options
+    # TODO: ["ONE more", "$$ = ['ONE', yytext, $2]"]
     bnf[name].push(option.pattern)
 
 parser: new Parser({bnf: bnf}, {debug: false})
