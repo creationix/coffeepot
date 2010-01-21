@@ -1,5 +1,13 @@
-# Assignment:
-# More comments:
-a: 5
-a: b: true
-window.url: "http://google.com"
+# Comment
+1
+true
+/abc/
+"Hello \" World"
+3 * 5
+a - b
+1 + 2 + 3
+age: 27
+=> x
+
+# All together now
+square: x =>

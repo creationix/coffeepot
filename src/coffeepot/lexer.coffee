@@ -25,7 +25,7 @@ Keywords: [
 Containers: [
   "COMMENT", "ID", "PROPERTY"
   "OPERATOR", "NUMBER", "BOOLEAN"
-  "RAW", "HEREDOC", "STRING", "REGEXP"
+  "RAW", "HEREDOC", "STRING", "REGEX"
 ]
 
 
@@ -34,14 +34,14 @@ Containers: [
 # function.
 Tokens: {
   # These are taken literally
-  CODE: /^([\(\)\[\]\{\}:=;,])/
-
+  CODE: /^([\(\)\[\]\{\};,])/
   NEWLINE: /^(\n)/
   WS: /^([ \t]+)/
   COMMENT: /^(#.*)\n?/
   ID: /^([a-z_$][a-z0-9_$]*)/i
   PROPERTY: /^(\.[a-z_$][a-z0-9_$]*)/i
   ROCKET: /^(=>)/
+  ASSIGN: /^(:|=)/
   OPERATOR: /^([+\*&|\/\-%=<>!?]+)/
   DOTDOTDOT: /^(\.\.\.)/
   DOTDOT: /^(\.\.)/
@@ -54,7 +54,7 @@ Tokens: {
       {"1": num + ""}
 
   # Embedded raw JavaScript
-  RAW: code =>
+  JS: code =>
     if code[0] != "`"
       return null
     pos: 1
@@ -108,7 +108,7 @@ Tokens: {
       {"1":code.substr(0, pos)}
 
   # Same story as strings, but even more evil!
-  REGEXP: code =>
+  REGEX: code =>
     start: code[0]
     return null unless code[0] == "\/"
     pos: 1
@@ -156,7 +156,7 @@ analyse: tokens =>
     if last and last[0] == "NEWLINE" and token[0] != "NEWLINE"
       top: stack[stack.length - 1]
       indent: if token[0] == "WS"
-        token[1]
+        token[2]
       else
         ""
 
@@ -186,33 +186,33 @@ analyse: tokens =>
 
         # Look for reserved identifiers and mark them
         if token[0] == "ID"
-          if Keywords.indexOf(token[1]) >= 0
-            token = [token[1]]
-          else if (idx: Booleans.indexOf(token[1])) >= 0
+          if Keywords.indexOf(token[2]) >= 0
+            token = [token[2]]
+          else if (idx: Booleans.indexOf(token[2])) >= 0
             token[0] = "BOOLEAN"
-            token[1] = idx % 2 == 0
+            token[2] = idx % 2 == 0
 
         # Convert strings to their raw value
         if token[0] == "STRING"
-          token[1] =
-          token[1]: try
-            token[1] = JSON.parse(token[1].replace(/\n/g, "\\n"))
+          token[2] =
+          token[2]: try
+            token[2] = JSON.parse(token[2].replace(/\n/g, "\\n"))
           catch e
 
             false
 
         # Strip leading whitespace off heredoc blocks
         if token[0] == "HEREDOC"
-          token[1] = strip_heredoc(token[1])
+          token[2] = strip_heredoc(token[2])
           token[0] = "STRING"
 
         if token[0] == "COMMENT"
-          token[1] = token[1].substr(1, token[1].length)
+          token[2] = token[2].substr(1, token[2].length)
 
         if token[0] == "CODE"
-          token = [token[1]]
+          token = [token[2]]
         if Containers.indexOf(token[0]) < 0
-          token.length = 1
+          token.length = 2
 
         result.push(token)
     last: token
@@ -231,6 +231,6 @@ CoffeePot.tokenize: source =>
   tokens: []
   while pos < length
     [type, match, consume] = match_token(source.substr(pos, length))
-    tokens.push([type, match])
+    tokens.push([type, pos, match])
     pos += match.length
   analyse(tokens)

@@ -16,7 +16,7 @@ Helper: {
         "(" + fn + "())"
       [pattern_string, "$$ = " + fn + ";"]
     else
-      pattern_string
+      [pattern_string, "$$ = $1;"]
 
   # Trims leading whitespace from a block of text
   block_trim: text =>

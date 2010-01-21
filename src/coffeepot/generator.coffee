@@ -4,7 +4,7 @@ block_vars: []
 
 Generators: {
 
-  Start: block =>
+  Root: block =>
     "(function () {" + this(block) + "}());"
 
   Not: expr =>
