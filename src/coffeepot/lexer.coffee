@@ -210,7 +210,7 @@ analyse: tokens =>
           token[2] = token[2].substr(1, token[2].length)
 
         if token[0] == "CODE"
-          token = [token[2]]
+          token = [token[2], token[1]]
         if Containers.indexOf(token[0]) < 0
           token.length = 2
 
