@@ -30,6 +30,17 @@ grammar: {
     o("Binop")
     o("Array")
     o("Object")
+    o("Call")
+  ]
+
+  Call: [
+    o("Expression ( )") => ["Call", $1, []]
+    o("Expression ( ExpressionList )") => ["Call", $1, $3]
+  ]
+
+  ExpressionList: [
+    o("Expression") => [$1]
+    o("ExpressionList , Expression") => $1.concat([$3])
   ]
 
   Binop: [
@@ -81,6 +92,7 @@ grammar: {
 
   Source: [
     o("Id")
+    o("Source PROPERTY") => ["Property", $1[1] + yytext]
   ]
 
   Function: [
@@ -88,6 +100,19 @@ grammar: {
     o("Id ROCKET Expression") => ["Function", [$1], $3]
   ]
 
+  VarListItem: [
+    o("Id")
+    o("Splat")
+  ]
+
+  VarList: [
+    o("VarListItem") => [$1]
+    o("VarList , VarListItem") => $1.concat($3)
+  ]
+
+  Splat: [
+    o("Id DOTDOTDOT") => ["Splat", $1[1]]
+  ]
 
   Id: [
     o("ID") => ["ID", yytext]
