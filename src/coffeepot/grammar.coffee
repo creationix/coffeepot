@@ -28,10 +28,39 @@ grammar: {
     o("Assign")
     o("Function")
     o("Binop")
+    o("Array")
+    o("Object")
   ]
 
   Binop: [
     o("Expression Operator Expression") => ["Binop", $2, $1, $3]
+  ]
+
+  Array: [
+    o("[ ArrayItems ]") => ["Array", $2]
+    o("[ NEWLINE INDENT ArrayItems NEWLINE DEDENT NEWLINE ]") => ["Array", $4]
+  ]
+
+  ArrayItems: [
+    o("Expression") => [$1]
+    o("ArrayItems , Expression") => $1.concat([$3])
+    o("ArrayItems NEWLINE Expression") => $1.concat([$3])
+  ]
+
+  Object: [
+    o("{ ObjectItems }") => ["Object", $2]
+    o("{ NEWLINE INDENT ObjectItems NEWLINE DEDENT NEWLINE }") => ["Object", $4]
+  ]
+
+  ObjectItem: [
+    o("Id : Expression") => [$1, $3]
+    o("String : Expression") => [$1, $3]
+  ]
+
+  ObjectItems: [
+    o("ObjectItem") => [$1]
+    o("ObjectItems , ObjectItem") => $1.concat([$3])
+    o("ObjectItems NEWLINE ObjectItem") => $1.concat([$3])
   ]
 
   Operator: [
@@ -46,7 +75,8 @@ grammar: {
   ]
 
   Assign: [
-    o("Source ASSIGN Expression") => ["Assign", $1, $3]
+    o("Source : Expression") => ["Assign", $1, $3]
+    o("Source = Expression") => ["Assign", $1, $3]
   ]
 
   Source: [

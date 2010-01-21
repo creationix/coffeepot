@@ -34,14 +34,13 @@ Containers: [
 # function.
 Tokens: {
   # These are taken literally
-  CODE: /^([\(\)\[\]\{\};,])/
+  CODE: /^([\(\)\[\]\{\}:=;,])/
   NEWLINE: /^(\n)/
   WS: /^([ \t]+)/
   COMMENT: /^(#.*)\n?/
   ID: /^([a-z_$][a-z0-9_$]*)/i
   PROPERTY: /^(\.[a-z_$][a-z0-9_$]*)/i
   ROCKET: /^(=>)/
-  ASSIGN: /^(:|=)/
   OPERATOR: /^([+\*&|\/\-%=<>!?]+)/
   DOTDOTDOT: /^(\.\.\.)/
   DOTDOT: /^(\.\.)/
@@ -164,8 +163,8 @@ analyse: tokens =>
       while indent.length < top.length
         if indent != top.substr(0, indent.length)
           throw new Error("Indentation mismatch")
-        result.push(["DEDENT", top])
-        result.push(["NEWLINE"])
+        result.push(["DEDENT", token[1], top])
+        result.push(["NEWLINE", token[1] ])
         stack.pop()
         top: stack[stack.length - 1]
 
@@ -173,7 +172,7 @@ analyse: tokens =>
       if indent.length > top.length
         if top != indent.substr(0, top.length)
           throw new Error("Indentation mismatch")
-        result.push(["INDENT", indent])
+        result.push(["INDENT", token[1], indent])
         stack.push(indent)
 
       # Check for other possible mismatch
