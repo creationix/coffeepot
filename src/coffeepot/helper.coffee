@@ -1,23 +1,22 @@
-
+process.mixin(require('sys'))
 root: exports ? this
 CoffeePot: (root.CoffeePot ?= {})
 
-Helper: {
-  # Helper for non-terminal definitions
-  non_terminal: options, fn =>
-    non_terminal: {
-      options: options
-    }
-    non_terminal.filter: fn if fn
-    non_terminal
+# Transforms the generated javascript to a snipped as expected by Jison
+unwrap: /function\s*\(\)\s*\{\s*return\s*([\s\S]*);\s*\}/
 
-  # Helper for non-terminal pattern options
+Helper: {
+
+  # Converts the generated function into something Jison likes
   option: pattern_string, fn =>
-    option: {
-      pattern: pattern_string
-    }
-    option.filter: fn if fn
-    option
+    if fn
+      fn: if match: (fn + "").match(unwrap)
+        match[1]
+      else
+        "(" + fn + "())"
+      [pattern_string, "$$ = " + fn + ";"]
+    else
+      pattern_string
 
   # Trims leading whitespace from a block of text
   block_trim: text =>

@@ -221,9 +221,6 @@ analyse: tokens =>
   while stack.length > 1
     result.push(["DEDENT", stack.pop()])
 
-  # Tack on the end marker needed by the parser
-  result.push(["END"])
-
   result
 
 # Turns a long string into a stream of tokens

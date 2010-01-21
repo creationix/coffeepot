@@ -6,17 +6,19 @@ Parser: require('jison').Parser
 
 bnf: {}
 for name, non_terminal of CoffeePot.grammar
-  bnf[name] = []
-  for option in non_terminal.options
-    # TODO: ["ONE more", "$$ = ['ONE', yytext, $2]"]
-    bnf[name].push(option.pattern)
+  bnf[name]: for option in non_terminal
+    if option[1] and name == "Start"
+      option[1] = "return " + option[1]
+    option
+# puts(inspect(bnf))
 
-parser: new Parser({bnf: bnf}, {debug: false})
+parser: new Parser({tokens: "NEWLINE COMMENT ;", bnf: bnf}, {debug: false})
 
 # Thin wrapper around the real lexer
 parser.lexer = {
   lex: =>
-    token: this.tokens[this.pos]
+    token: this.tokens[this.pos] || [""]
+    # puts(inspect(token))
     this.pos++
     this.yytext = token[1]
     token[0]
