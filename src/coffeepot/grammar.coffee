@@ -1,34 +1,59 @@
 root: exports ? this
 CoffeePot: (root.CoffeePot ?= {})
 Helper: CoffeePot.Helper ? require('coffeepot/helper').CoffeePot.Helper
-p: Helper.option
+o: Helper.option
 
 # grammar for the CoffeeScript language's parser
 grammar: {
 
   Start: [
-    p("Block") =>
+    o("Block") =>
       "(function () {\n" + (("  " + line) for line in $1.split("\n")).join("\n") + "\n}());"
   ]
 
   # Any list of expressions or method body, seperated by line breaks or semis.
   Block: [
-    p("Block Statement") => $1 + '\n' + $2
-    p("Statement") => $1
+    o("Block Statement") => $1 + '\n' + $2
+    o("Statement") => $1
   ]
 
   Statement: [
-    p("Comment Terminator") => $1
-    p("Expression Terminator") => $1 + ';'
+    o("Comment Terminator") => $1
+    o("Expression Terminator") => $1 + ';'
   ]
 
   Comment: [
-    p("COMMENT") => '//' + yytext
+    o("COMMENT") => '//' + yytext
   ]
 
   Terminator: [
-    p("NEWLINE")
-    p(";")
+    o("NEWLINE")
+    o(";")
+  ]
+
+  Expression: [
+    o("Assign") => $1
+    o("Literal") => $1
+  ]
+
+  Literal: [
+    o("NUMBER") => yytext
+    o("BOOLEAN") => yytext
+    o("STRING") => JSON.stringify(yytext)
+  ]
+
+  Source: [
+    o("ID") => yytext
+    o("Source Property") => $1 + $2
+  ]
+
+  Property: [
+    o("PROPERTY") => yytext
+  ]
+
+  Assign: [
+    o("Source : Expression") => $1 + " = " + $3
+    o("Source = Expression") => $1 + " = " + $3
   ]
 
 
