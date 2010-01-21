@@ -55,13 +55,9 @@ grammar: {
 
   Function: [
     o("ROCKET Expression") => ["Function", [], $2]
-    o("VarList ROCKET Expression") => ["Function", $1, $3]
+    o("Id ROCKET Expression") => ["Function", [$1], $3]
   ]
 
-  VarList: [
-    o("Id") => [$1]
-    o("VarList , Id") => $1.concat([$3])
-  ]
 
   Id: [
     o("ID") => ["ID", yytext]
