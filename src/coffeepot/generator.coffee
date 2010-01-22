@@ -6,7 +6,7 @@ block_vars: []
 
 sub_compile: expr =>
   tokens: CoffeePot.tokenize(expr)
-  tree: CoffeePot.parse(tokens, "Expression")
+  tree: CoffeePot.parse(tokens)[1][1][0]
   render(tree)
 
 Generators: {

@@ -539,12 +539,20 @@
 // coffeepot/generator.coffee
 
 (function(){
-  var CoffeePot, Generators, block_vars, render, root;
+  var CoffeePot, Generators, block_vars, render, root, sub_compile;
   var __hasProp = Object.prototype.hasOwnProperty;
   root = (typeof exports !== "undefined" && exports !== null) ? exports : this;
   CoffeePot = (root.CoffeePot = (typeof root.CoffeePot !== "undefined" && root.CoffeePot !== null) ? root.CoffeePot : {
   });
+  CoffeePot.tokenize = (typeof CoffeePot.tokenize !== "undefined" && CoffeePot.tokenize !== null) ? CoffeePot.tokenize : require('coffeepot/lexer').CoffeePot.tokenize;
+  CoffeePot.parse = (typeof CoffeePot.parse !== "undefined" && CoffeePot.parse !== null) ? CoffeePot.parse : require('coffeepot/parser').CoffeePot.parse;
   block_vars = [];
+  sub_compile = function sub_compile(expr) {
+    var tokens, tree;
+    tokens = CoffeePot.tokenize(expr);
+    tree = CoffeePot.parse(tokens)[1][1][0];
+    return render(tree);
+  };
   Generators = {
     Root: function Root(block) {
       var __a;
@@ -622,9 +630,61 @@
       return COMMENT === this.constructor ? this : __a;
     },
     STRING: function STRING(content) {
-      var __a;
-      __a = JSON.stringify(content);
-      return STRING === this.constructor ? this : __a;
+      var __a, __b, char, code, done, len, level, output, pos, quote, start;
+      if (content.match(/[^\\]?#{.*[^\\]}/)) {
+        output = [];
+        pos = 0;
+        len = content.length;
+        while (pos < len) {
+          // Grab plain text chunks
+          start = pos;
+          pos = content.substr(pos, len).indexOf("#{");
+          console.log(pos);
+          if (pos < 0) {
+            pos = len;
+            output.push(JSON.stringify(content.substr(start, len - start)));
+            continue;
+          }
+          pos += start;
+          output.push(JSON.stringify(content.substr(start, pos - start)));
+          pos += 2;
+          start = pos;
+          level = 1;
+          quote = false;
+          done = false;
+          while (!done && pos < len) {
+            char = content.substr(pos, 1);
+            pos++;
+            if (char === "\\") {
+              pos++;
+              continue;
+            }
+            if (quote) {
+              if (char === quote) {
+                quote = false;
+              }
+              continue;
+            }
+            if (char === "{") {
+              level++;
+            } else if (char === "}") {
+              level--;
+              if (level === 0) {
+                done = true;
+              }
+            } else if (char === "\"" || char === "'") {
+              quote = char;
+            }
+          }
+          code = content.substr(start, pos - start - 1);
+          output.push(sub_compile(code));
+        }
+        __a = output.join(" + ");
+        return STRING === this.constructor ? this : __a;
+      } else {
+        __b = JSON.stringify(content);
+        return STRING === this.constructor ? this : __b;
+      }
     },
     If: function If(condition, exp1, exp2) {
       var __a;
@@ -693,13 +753,8 @@
       var __a, content, first, second;
       first = this(exp1);
       second = this(exp2);
-      __a = content = op === "?" ? '(typeof ' + first + ' !== "undefined" && ' + first + ' !== null)' + ' ? ' + first + ' : ' + second : first + " " + op + " " + second;
+      __a = content = op === "?" ? '(typeof ' + first + ' !== "undefined" && ' + first + ' !== null)' + ' ? ' + first + ' : ' + second : "(" + first + " " + op[1] + " " + second + ")";
       return Binop === this.constructor ? this : __a;
-    },
-    Property: function Property(source, id) {
-      var __a;
-      __a = this(source) + "." + this(id);
-      return Property === this.constructor ? this : __a;
     },
     Array: function Array(items) {
       var __a, __b, __c, __d, item, self;
