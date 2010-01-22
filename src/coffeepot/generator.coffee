@@ -41,8 +41,10 @@ Generators: {
     content: "\n" + (("  " + line) for line in content.split("\n")).join("\n") + "\n"
     content
 
+  Property: source, id =>
+    this(source) + "." + this(id)
 
-  # ["Function",[["ID","x"]],["Binop",["OPERATOR","*"],["ID","x"],["ID","x"]]];
+
   Function: args, content, name =>
     name ?= ""
     content: if content[0] == "Block"
@@ -137,7 +139,7 @@ Generators: {
       '(typeof ' + first + ' !== "undefined" && ' + first + ' !== null)' +
       ' ? ' + first + ' : ' + second
     else
-      "(" + first + " " + op[1] + " " + second + ")"
+      first + " " + op + " " + second
 
   Array: items =>
     self: this

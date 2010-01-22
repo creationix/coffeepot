@@ -609,7 +609,11 @@
       __f = content;
       return Block === this.constructor ? this : __f;
     },
-    // ["Function",[["ID","x"]],["Binop",["OPERATOR","*"],["ID","x"],["ID","x"]]];
+    Property: function Property(source, id) {
+      var __a;
+      __a = this(source) + "." + this(id);
+      return Property === this.constructor ? this : __a;
+    },
     Function: function Function(args, content, name) {
       var __a, __b, __c, __d, arg;
       name = (typeof name !== "undefined" && name !== null) ? name : "";
@@ -753,7 +757,7 @@
       var __a, content, first, second;
       first = this(exp1);
       second = this(exp2);
-      __a = content = op === "?" ? '(typeof ' + first + ' !== "undefined" && ' + first + ' !== null)' + ' ? ' + first + ' : ' + second : "(" + first + " " + op[1] + " " + second + ")";
+      __a = content = op === "?" ? '(typeof ' + first + ' !== "undefined" && ' + first + ' !== null)' + ' ? ' + first + ' : ' + second : first + " " + op + " " + second;
       return Binop === this.constructor ? this : __a;
     },
     Array: function Array(items) {
