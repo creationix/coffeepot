@@ -90,3 +90,20 @@ label {
   -webkit-border-radius: 10px;
   -webkit-box-shadow: 0 0 5px #fa4;
 }
+#nav {
+  position: absolute;
+  right: 5px;
+  top: 5px;
+  margin: 0;
+  line-height: 1.5em;
+  padding: 0;
+}
+#nav a, #nav a:link #nav a:active #nac a:visited {
+  display: block;
+  text-decoration: none;
+  color: #888;
+}
+#nav a:hover {
+  text-decoration: underline;
+  color: #4af;
+}
