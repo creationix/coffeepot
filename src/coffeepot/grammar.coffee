@@ -1,7 +1,18 @@
 root: exports ? this
 CoffeePot: (root.CoffeePot ?= {})
-Helper: CoffeePot.Helper ? require('coffeepot/helper').CoffeePot.Helper
-o: Helper.option
+Parser: require('jison').Parser
+
+# Helper to make our pretty syntax work with Jison
+o: pattern_string, fn =>
+  if fn
+    fn: if match: (fn + "").match(unwrap)
+      match[1]
+    else
+      "(" + fn + "())"
+    [pattern_string, "$$ = " + fn + ";"]
+  else
+    [pattern_string, "$$ = $1;"]
+unwrap: /function\s*\(\)\s*\{\s*return\s*([\s\S]*);\s*\}/
 
 # grammar for the CoffeeScript language's parser
 grammar: {
@@ -126,8 +137,71 @@ grammar: {
     o("ID") => ["ID", yytext]
   ]
 
-
-
 }
 
-CoffeePot.grammar: grammar
+# Make a Jison parser
+bnf: {}
+tokens: []
+for name, non_terminal of grammar
+  bnf[name]: for option in non_terminal
+    for part in option[0].split(" ")
+      if !grammar[part]
+        tokens.push(part)
+    if name == "Root"
+      option[1] = "return " + option[1]
+    option
+tokens = tokens.join(" ")
+parser: new Parser({tokens: tokens, bnf: bnf}, {debug: false})
+
+# Thin wrapper around the real lexer
+parser.lexer: {
+  lex: =>
+    token: this.tokens[this.pos] || [""]
+    this.pos++
+    this.yyline = token[1][1]
+    this.yytext = token[2]
+    token[0]
+  setInput: tokens =>
+    this.tokens = tokens
+    this.pos = 0
+  upcomingInput: => ""
+  showPosition: => this.pos
+}
+
+# Parse function with nice error reporting
+parse: tokens =>
+  try
+    parser.parse(tokens)
+  catch e
+    [message, num] = e.message.split("\n")
+    token: tokens[num[0] - 1]
+    e.message: message + "\n" +
+      "Token " + num[0] + ": " + JSON.stringify(tokens[num - 1])
+    throw e
+
+CoffeePot.parse: parse
+
+CoffeePot.generate_parser: =>
+
+  # Generate the parser code
+  jison: parser.generate({
+    moduleType: "js",
+    lexerSource: "\n\nvar lexer = {\n    " +
+      ((name +": " + value) for name, value of parser.lexer).join(",\n    ") +
+      "\n};\n"
+  })
+
+  # Footer put at end of code
+  footer: =>
+    root: exports ? this
+    CoffeePot: (root.CoffeePot ?= {})
+    CoffeePot.parse: args... =>
+      parser.parse(args...)
+    # Define Object.keys for browsers that don't have it.
+    Object.keys: (obj => key for key, value of obj) unless Object.keys?
+
+
+  "(function () {\n" +
+    (("  " + line) for line in jison.split("\n")).join("\n") + "\n" +
+    (footer + "").match(/\{([\s\S]*)\}/)[1] +
+    "\n}());\n";

@@ -1,1 +1,0 @@
-../lib/coffeepot-all.js

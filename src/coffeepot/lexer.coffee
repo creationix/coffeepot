@@ -1,6 +1,5 @@
 root: exports ? this
 CoffeePot: (root.CoffeePot ?= {})
-Helper: CoffeePot.Helper ? require('coffeepot/helper').CoffeePot.Helper
 
 Booleans: [
   "true", "false"
@@ -127,6 +126,19 @@ Tokens: {
 
 tokens: []
 
+# Trims leading whitespace from a block of text
+block_trim: text =>
+  lines: text.split("\n")
+  min: null
+  for line in lines
+    continue unless (match: line.match(/^(\s*)\S/))
+    indent: match[1].length
+    if min == null or indent < min
+      min: indent
+  lines: lines.map() line =>
+    line.substr(min, line.length)
+  lines.join("\n")
+
 # Does a simple longest match algorithm
 match_token: code =>
   result: null
@@ -229,6 +241,8 @@ CoffeePot.tokenize: source =>
   tokens: []
   while pos < length
     [type, match, consume] = match_token(source.substr(pos, length))
-    tokens.push([type, pos, match])
+    # line_no: source.substr(0, pos).match(/\n/).length
+    line_no: null
+    tokens.push([type, [pos, line_no], match])
     pos += match.length
   analyse(tokens)
