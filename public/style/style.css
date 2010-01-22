@@ -75,10 +75,14 @@ label {
   left: 52%;
 }
 
-textarea::-webkit-scrollbar {
+.scroll {
+  overflow: auto;
+}
+
+.scroll::-webkit-scrollbar {
    -webkit-border-radius: 10px;
 }
-textarea::-webkit-scrollbar-thumb {
+.scroll::-webkit-scrollbar-thumb {
   background: #fa4;
   -webkit-border-radius: 10px;
   -webkit-box-shadow: 0 0 5px #fa4;

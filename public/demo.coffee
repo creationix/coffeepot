@@ -12,14 +12,26 @@ this.onload: =>
   # Called
   compile: =>
     code: source.value
-    tokens: CoffeePot.tokenize(code)
-    console.log(tokens)
-    js: CoffeePot.compile(code)
-    output.value = js
+    try
+      js: CoffeePot.compile(code)
+      output.innerText = js
+    catch e
+      output.innerText = e.stack
 
   # Fill in the box with the input and call compile
   source.value = sample
   compile()
+
+  # Recompile after 500ms of idle time after any activity.
+  timer: null
+  onChange: e =>
+    console.log("Change")
+    clearTimeout(timer) if timer
+    timer: setTimeout(compile, 1000)
+
+  # Bind onkeyup and onchange in the text field
+  source.addEventListener('keyup',onChange)
+  source.addEventListener('change',onChange)
 
 
 
