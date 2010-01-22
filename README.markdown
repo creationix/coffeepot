@@ -4,5 +4,8 @@ CoffeePot will be a CoffeeScript compiler written in pure CoffeeScript.  For tho
 
 Currently the compiler can compile a subset of CoffeeScript.
 
-A live example is available at <http://bit.ly/7k5TA4>
+A live example is available at <http://trycoffee.org>
+
+The public folder has a fully usable distribution of coffeescript that can be used for both browsers and commonjs environments.
+
 More to come soon...
