@@ -41,7 +41,7 @@ Generators: {
     content: if content[0] == "Block"
       this(content)
     else
-      " " + this(content) + "; "
+      " return " + this(content) + "; "
     "function " + name + "(" + (arg[1] for arg in args).join(", ") + ") {" + content + "}"
 
   COMMENT: content => "//" + content
@@ -61,8 +61,14 @@ Generators: {
   Source: parts =>
     (part[1] for part in parts).join("")
 
-  Call: method, args =>
-    this(method) + "(" + this(args) + ")"
+  Call: target, message, args =>
+    self: this
+    args: args.map() arg => self(arg)
+    call: this(message) + "(" + args.join(", ") + ")"
+    if target
+      this(target) + "." + call
+    else
+      call
 
   ExpressionList: items =>
     self: this
@@ -76,11 +82,14 @@ Generators: {
   Binop: op, exp1, exp2 =>
     first: this(exp1)
     second: this(exp2)
-    content: if op[1] == "?"
+    content: if op == "?"
       '(typeof ' + first + ' !== "undefined" && ' + first + ' !== null)' +
       ' ? ' + first + ' : ' + second
     else
-      first + " " + op[1] + " " + second
+      first + " " + op + " " + second
+
+  Property: source, id =>
+    this(source) + "." + this(id)
 
   Array: items =>
     self: this
@@ -88,8 +97,8 @@ Generators: {
 
   Object: items =>
     self: this
-    pairs: (item[0] + ": " + self(item[1])) for item in items
-    "{\n\t" + pairs.join(",\n\t") + "\n}"
+    pairs: (self(item[0]) + ": " + self(item[1])) for item in items
+    "{\n  " + pairs.join(",\n  ") + "\n}"
 }
 
 
@@ -98,7 +107,7 @@ render: node =>
   [name, args...] = node
   if Generators[name]
     Generators[name].apply(render, args)
-  else if (name.match(/^[A-Z]+$/))
+  else if (typeof name == "string" and name.match(/^[A-Z]+$/))
     args[0]
   else
     JSON.stringify(node)

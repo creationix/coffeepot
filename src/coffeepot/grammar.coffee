@@ -7,12 +7,12 @@ o: Helper.option
 grammar: {
 
   Root: [
-    o("Expressions") => ["Root", $1]
+    o("Block") => ["Root", ["Block", $1]]
   ]
 
-  Expressions: [
+  Block: [
     o("Statement NEWLINE") => [$1]
-    o("Expressions Statement NEWLINE") => $1.concat([$2])
+    o("Block Statement NEWLINE") => $1.concat([$2])
   ]
 
   Statement: [
@@ -34,8 +34,10 @@ grammar: {
   ]
 
   Call: [
-    o("Expression ( )") => ["Call", $1, []]
-    o("Expression ( ExpressionList )") => ["Call", $1, $3]
+    o("Id ( )") => ["Call", null, $1, []]
+    o("Expression . Id ( )") => ["Call", $1, $3, []]
+    o("Id ( ExpressionList )") => ["Call", null, $1, $3]
+    o("Expression . Id ( ExpressionList )") => ["Call", $1, $3, $5]
   ]
 
   ExpressionList: [
@@ -90,14 +92,20 @@ grammar: {
     o("Source = Expression") => ["Assign", $1, $3]
   ]
 
+  Property: [
+    o("Expression . Id") => ["Property", []]
+  ]
+
   Source: [
     o("Id")
-    o("Source PROPERTY") => ["Property", $1[1] + yytext]
+    o("Source . Id") => ["Property", $1, $3]
+    o("Source [ Expression ]") => ["Property", $1, 3]
   ]
 
   Function: [
     o("ROCKET Expression") => ["Function", [], $2]
     o("Id ROCKET Expression") => ["Function", [$1], $3]
+    o("Id , Splat ROCKET Expression") => ["Function", [$1, $3], $5]
   ]
 
   VarListItem: [
