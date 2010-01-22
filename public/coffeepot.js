@@ -16,7 +16,7 @@
   Tokens = {
     // These are taken literally
     CODE: /^([\(\)\[\]\{\}:=;,.])/,
-    NEWLINE: /^(\n)/,
+    NEWLINE: /^([ \t]*\n)/,
     WS: /^([ \t]+)/,
     COMMENT: /^(#.*)\n?/,
     ID: /^([a-z_$][a-z0-9_$]*)/i,
