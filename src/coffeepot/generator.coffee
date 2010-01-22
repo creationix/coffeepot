@@ -1,6 +1,13 @@
 root: exports ? this
 CoffeePot: (root.CoffeePot ?= {})
+CoffeePot.tokenize ?= require('coffeepot/lexer').CoffeePot.tokenize
+CoffeePot.parse ?= require('coffeepot/parser').CoffeePot.parse
 block_vars: []
+
+sub_compile: expr =>
+  tokens: CoffeePot.tokenize(expr)
+  tree: CoffeePot.parse(tokens, "Expression")
+  render(tree)
 
 Generators: {
 
@@ -45,7 +52,51 @@ Generators: {
     "function " + name + "(" + (arg[1] for arg in args).join(", ") + ") {" + content + "}"
 
   COMMENT: content => "//" + content
-  STRING: content => JSON.stringify(content)
+  STRING: content =>
+    if content.match(/[^\\]?#{.*[^\\]}/)
+      output: []
+      pos: 0
+      len: content.length
+      while pos < len
+
+        # Grab plain text chunks
+        start: pos
+        pos: content.substr(pos, len).indexOf("#{")
+        console.log(pos)
+        if pos < 0
+          pos = len
+          output.push(JSON.stringify(content.substr(start, len - start)))
+          continue
+        pos += start
+        output.push(JSON.stringify(content.substr(start, pos - start)))
+
+        pos += 2
+        start: pos
+        level: 1
+        quote: false
+        done: false
+        while not done and pos < len
+          char: content.substr(pos, 1)
+          pos++
+          if char == "\\"
+            pos++
+            continue
+          if quote
+            quote = false if char == quote
+            continue
+          if char == "{"
+            level++
+          else if char == "}"
+            level--
+            done = true if level == 0
+          else if char == "\"" or char == "'"
+            quote: char
+        code: content.substr(start, pos - start - 1)
+        output.push(sub_compile(code))
+
+      output.join(" + ")
+    else
+      JSON.stringify(content)
 
   If: condition, exp1, exp2 =>
     "if (" + this(condition) + ") { " + this(exp1) + "; }"
@@ -86,10 +137,7 @@ Generators: {
       '(typeof ' + first + ' !== "undefined" && ' + first + ' !== null)' +
       ' ? ' + first + ' : ' + second
     else
-      first + " " + op + " " + second
-
-  Property: source, id =>
-    this(source) + "." + this(id)
+      "(" + first + " " + op[1] + " " + second + ")"
 
   Array: items =>
     self: this
