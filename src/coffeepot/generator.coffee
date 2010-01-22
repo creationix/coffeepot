@@ -78,21 +78,21 @@ Generators: {
         quote: false
         done: false
         while not done and pos < len
-          char: content.substr(pos, 1)
+          character: content.substr(pos, 1)
           pos++
-          if char == "\\"
+          if character == "\\"
             pos++
             continue
           if quote
-            quote = false if char == quote
+            quote = false if character == quote
             continue
-          if char == "{"
+          if character == "{"
             level++
-          else if char == "}"
+          else if character == "}"
             level--
             done = true if level == 0
-          else if char == "\"" or char == "'"
-            quote: char
+          else if character == "\"" or character == "'"
+            quote: character
         code: content.substr(start, pos - start - 1)
         output.push(sub_compile(code))
 

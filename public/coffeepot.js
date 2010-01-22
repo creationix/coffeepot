@@ -634,7 +634,7 @@
       return COMMENT === this.constructor ? this : __a;
     },
     STRING: function STRING(content) {
-      var __a, __b, char, code, done, len, level, output, pos, quote, start;
+      var __a, __b, character, code, done, len, level, output, pos, quote, start;
       if (content.match(/[^\\]?#{.*[^\\]}/)) {
         output = [];
         pos = 0;
@@ -657,27 +657,27 @@
           quote = false;
           done = false;
           while (!done && pos < len) {
-            char = content.substr(pos, 1);
+            character = content.substr(pos, 1);
             pos++;
-            if (char === "\\") {
+            if (character === "\\") {
               pos++;
               continue;
             }
             if (quote) {
-              if (char === quote) {
+              if (character === quote) {
                 quote = false;
               }
               continue;
             }
-            if (char === "{") {
+            if (character === "{") {
               level++;
-            } else if (char === "}") {
+            } else if (character === "}") {
               level--;
               if (level === 0) {
                 done = true;
               }
-            } else if (char === "\"" || char === "'") {
-              quote = char;
+            } else if (character === "\"" || character === "'") {
+              quote = character;
             }
           }
           code = content.substr(start, pos - start - 1);

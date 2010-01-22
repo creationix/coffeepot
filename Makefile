@@ -14,6 +14,11 @@ single: folder
 	echo "// coffeepot.coffee\n" >> public/coffeepot.js
 	cat lib/coffeepot.js >> public/coffeepot.js
 
+# Requires that compiler.jar be in the parent directory.
+# See google closure for details
+compressed: single
+	java -jar ../compiler.jar --js public/coffeepot.js  -js_output_file public/coffeepot-min.js
+
 test_code:
 	coffee test/*.coffee -o test
 
