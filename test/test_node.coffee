@@ -3,8 +3,11 @@ CoffeePot: require('coffeepot').CoffeePot
 process.mixin(require('sys'))
 file: require('file')
 file.read("sample.coffee").addCallback() code =>
+  tokens: CoffeePot.tokenize(code)
+  # puts("\nTokens:\n")
+  # puts(inspect(tokens))
   try
-    tree: CoffeePot.parse(code)
+    tree: CoffeePot.parse(tokens, code)
     try
       js: CoffeePot.generate(tree)
       puts("\nJS:\n")
@@ -14,4 +17,4 @@ file.read("sample.coffee").addCallback() code =>
     catch e
       puts(e.stack)
   catch e
-    puts(e.message)
+    puts(e.stack)

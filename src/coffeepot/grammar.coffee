@@ -62,7 +62,7 @@ grammar: {
 
   Array: [
     o("[ ArrayItems ]") => ["Array", $2]
-    o("[ NEWLINE INDENT ArrayItems NEWLINE DEDENT NEWLINE ]") => ["Array", $4]
+    o("[ NEWLINE INDENT ArrayItems NEWLINE DEDENT ]") => ["Array", $4]
   ]
 
   ArrayItems: [
@@ -73,7 +73,7 @@ grammar: {
 
   Object: [
     o("{ ObjectItems }") => ["Object", $2]
-    o("{ NEWLINE INDENT ObjectItems NEWLINE DEDENT NEWLINE }") => ["Object", $4]
+    o("{ NEWLINE INDENT ObjectItems NEWLINE DEDENT }") => ["Object", $4]
   ]
 
   ObjectItem: [
@@ -158,7 +158,7 @@ parser.lexer: {
   lex: =>
     token: this.tokens[this.pos] || [""]
     this.pos++
-    this.yyline = token[1][1]
+    # this.yyline = token[1][1]
     this.yytext = token[2]
     token[0]
   setInput: tokens =>
@@ -169,17 +169,23 @@ parser.lexer: {
 }
 
 # Parse function with nice error reporting
-parse: tokens =>
+parse: tokens, code =>
   try
     parser.parse(tokens)
   catch e
     [message, num] = e.message.split("\n")
     token: tokens[num[0] - 1]
+    before: code.substr(0, token[1]).split("\n")
+    line_no: before.length
+    before: before[line_no - 1]
+    after: code.substr(token[1], code.length).split("\n")[0]
     e.message: message + "\n" +
-      "Token " + num[0] + ": " + JSON.stringify(tokens[num - 1])
+      "Line " + line_no + ": " + inspect(before) + " !! " + inspect(after) + "\n" +
+      "Token " + num + ": " + JSON.stringify(tokens[num - 1])
     throw e
 
-CoffeePot.parse: parse
+CoffeePot.parse: args... =>
+  parser.parse(args...)
 
 CoffeePot.generate_parser: =>
 

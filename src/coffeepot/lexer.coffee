@@ -175,7 +175,7 @@ analyse: tokens =>
         if indent != top.substr(0, indent.length)
           throw new Error("Indentation mismatch")
         result.push(["DEDENT", token[1], top])
-        result.push(["NEWLINE", token[1] ])
+        # result.push(["NEWLINE", token[1] ])
         stack.pop()
         top: stack[stack.length - 1]
 
@@ -197,7 +197,7 @@ analyse: tokens =>
         # Look for reserved identifiers and mark them
         if token[0] == "ID"
           if Keywords.indexOf(token[2]) >= 0
-            token = [token[2]]
+            token[0] = token[2]
           else if (idx: Booleans.indexOf(token[2])) >= 0
             token[0] = "BOOLEAN"
             token[2] = idx % 2 == 0
@@ -220,7 +220,7 @@ analyse: tokens =>
           token[2] = token[2].substr(1, token[2].length)
 
         if token[0] == "CODE"
-          token = [token[2], token[1]]
+          token[0] = token[2]
         if Containers.indexOf(token[0]) < 0
           token.length = 2
 
