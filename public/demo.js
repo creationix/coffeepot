@@ -16,7 +16,9 @@
     code = source.value;
     try {
       js = CoffeePot.compile(code);
-      return setOutput(js);
+      setOutput(js);
+      sh_highlightDocument();
+      return source.focus();
     } catch (e) {
       setOutput(e.stack);
       throw e;

@@ -12,6 +12,8 @@ body, html {
 body, .code, #source {
   font-family: AnigmaScrawl;
   background: #333028;
+}
+body, #source {
   color: #fff4ef;
 }
 
@@ -53,6 +55,7 @@ label {
   bottom: 20px;
   padding: 10px;
   white-space: pre;
+  margin: 0;
 }
 #source {
   width: 100%;

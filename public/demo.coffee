@@ -15,6 +15,8 @@ compile: =>
   try
     js: CoffeePot.compile(code)
     setOutput(js)
+    sh_highlightDocument()
+    source.focus()
   catch e
     setOutput(e.stack)
     throw e
