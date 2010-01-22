@@ -1,0 +1,85 @@
+@font-face {
+	font-family: 'AnigmaScrawl';
+	src: url('aescrawl.eot');
+	src: local('AEnigmaScrawl4BRK'), url('aescrawl.woff') format('woff'), url('aescrawl.ttf') format('truetype'), url('aescrawl.svg#AEnigmaScrawl4BRK') format('svg');
+}
+body, html {
+  border: 0;
+  padding: 0;
+  margin: 0;
+
+}
+body, .code, #source {
+  font-family: AnigmaScrawl;
+  background: #333028;
+  color: #fff4ef;
+}
+
+h1 {
+  font-size: 38px;
+  line-height: 38px;
+  font-weight: bold;
+  text-align: center;
+  color: #4af;
+  padding: 0;
+  margin: 15px 0 10px 0;
+}
+h2 {
+  font-size: 26px;
+  line-height: 26px;
+  font-weight: normal;
+  text-align: center;
+  color: #fa4;
+  padding: 0;
+  margin: 0;
+}
+
+label {
+  display: block;
+  font-size: 36px;
+}
+
+.code, #source {
+  font-size: 24px;
+  position: absolute;
+  border: 0;
+  border-radius:10px; -moz-border-radius:10px; -webkit-border-radius:10px;
+}
+.code {
+  box-shadow:0 0 20px #4af;
+  -webkit-box-shadow:0 0 20px #4af;
+  -moz-box-shadow:0 0 20px #44aaff;
+  top: 100px;
+  bottom: 20px;
+  padding: 10px;
+  white-space: pre;
+}
+#source {
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 10px;
+  resize: none;
+}
+
+#source_wrapper {
+  left: 20px;
+  right: 52%;
+  padding: 0;
+}
+#output {
+  right: 20px;
+  left: 52%;
+}
+
+textarea::-webkit-scrollbar {
+   -webkit-border-radius: 10px;
+}
+textarea::-webkit-scrollbar-thumb {
+  background: #fa4;
+  -webkit-border-radius: 10px;
+  -webkit-box-shadow: 0 0 5px #fa4;
+}
