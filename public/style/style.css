@@ -110,3 +110,21 @@ label {
   text-decoration: underline;
   color: #4af;
 }
+#status {
+  display: none;
+  position: absolute;
+  right: 25%;
+  margin-right: -100px;
+  top: 50px;
+  background-color: #333;
+  color: #4f4;
+  font-weight: bold;
+  font-family: monaco, sans-serif;
+  size: 14px;
+  line-height: 1em;
+  padding: 8px 10px;
+  box-shadow:0 0 20px #4f4;
+  -webkit-box-shadow:0 0 20px #4f4;
+  -moz-box-shadow:0 0 20px #44ff44;
+  border-radius:10px; -moz-border-radius:10px; -webkit-border-radius:10px;
+}

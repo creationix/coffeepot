@@ -1,7 +1,8 @@
 (function(){
-  var compile, onChange, output, setOutput, source, timer;
+  var compile, onChange, output, real_compile, setOutput, source, status, timer;
   source = null;
   output = null;
+  status = null;
   setOutput = function setOutput(js) {
     // Remove the contents
     while (output.firstChild) {
@@ -10,19 +11,23 @@
     // put in new contents
     return output.appendChild(document.createTextNode(js));
   };
-  // Called
-  compile = function compile() {
+  real_compile = function real_compile() {
     var code, js;
     code = source.value;
     try {
       js = CoffeePot.compile(code);
       setOutput(js);
       sh_highlightDocument();
-      return source.focus();
+      source.focus();
     } catch (e) {
       setOutput(e.stack);
-      throw e;
     }
+    return status.style.display = "none";
+  };
+  // Called
+  compile = function compile() {
+    status.style.display = "block";
+    return setTimeout(real_compile, 0);
   };
   // Recompile after 500ms of idle time after any activity.
   timer = null;
@@ -38,6 +43,7 @@
     // Store references to our textareas.
     source = document.getElementById("source");
     output = document.getElementById("output");
+    status = document.getElementById("status");
     // Load the sample code out of the script tag in the head.
     sample = document.getElementById("sample").innerHTML;
     sample = sample.substr(1, sample.length);

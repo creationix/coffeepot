@@ -1,5 +1,6 @@
 source: null
 output: null
+status: null
 
 setOutput: js =>
   # Remove the contents
@@ -9,9 +10,9 @@ setOutput: js =>
   # put in new contents
   output.appendChild(document.createTextNode(js))
 
-# Called
-compile: =>
+real_compile: =>
   code: source.value
+
   try
     js: CoffeePot.compile(code)
     setOutput(js)
@@ -19,7 +20,13 @@ compile: =>
     source.focus()
   catch e
     setOutput(e.stack)
-    throw e
+  status.style.display = "none";
+
+# Called
+compile: =>
+  status.style.display = "block";
+  setTimeout(real_compile, 0)
+
 
 
 # Recompile after 500ms of idle time after any activity.
@@ -34,6 +41,7 @@ this.onload: =>
   # Store references to our textareas.
   source: document.getElementById("source")
   output: document.getElementById("output")
+  status: document.getElementById("status")
 
   # Load the sample code out of the script tag in the head.
   sample: document.getElementById("sample").innerHTML
