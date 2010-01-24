@@ -159,11 +159,16 @@ strip_heredoc: raw =>
 # indent/dedent tokens. By using a stack of indentation levels, we can support
 # mixed spaces and tabs as long the programmer is consistent within blocks.
 analyse: tokens =>
-  last: null
   result: []
   stack: [""]
+  i: -1
   for token in tokens
-    if last and last[0] == "NEWLINE" and token[0] != "NEWLINE"
+    last: tokens[i]
+    i++
+    if last && last[0] == "NEWLINE"
+
+      continue if token[0] == "NEWLINE"
+
       top: stack[stack.length - 1]
       indent: if token[0] == "WS"
         token[2]
@@ -175,7 +180,7 @@ analyse: tokens =>
         if indent != top.substr(0, indent.length)
           throw new Error("Indentation mismatch")
         result.push(["DEDENT", token[1], top])
-        # result.push(["NEWLINE", token[1] ])
+        result.push(["NEWLINE", token[1]])
         stack.pop()
         top: stack[stack.length - 1]
 
@@ -183,6 +188,7 @@ analyse: tokens =>
       if indent.length > top.length
         if top != indent.substr(0, top.length)
           throw new Error("Indentation mismatch")
+        result.pop()
         result.push(["INDENT", token[1], indent])
         stack.push(indent)
 
@@ -190,46 +196,41 @@ analyse: tokens =>
       if indent.length == top.length && indent != top
         throw new Error("Indentation mismatch")
 
+    # Look for reserved identifiers and mark them
+    if token[0] == "ID"
+      if Keywords.indexOf(token[2]) >= 0
+        token[0] = token[2]
+      else if (idx: Booleans.indexOf(token[2])) >= 0
+        token[0] = "BOOLEAN"
+        token[2] = idx % 2 == 0
+
+    # Convert strings to their raw value
+    if token[0] == "STRING"
+      token[2]: try
+         JSON.parse(token[2].replace(/\n/g, "\\n"))
+      catch e
+        token[2]
+
+    # Strip leading whitespace off heredoc blocks
+    if token[0] == "HEREDOC"
+      token[2] = strip_heredoc(token[2])
+      token[0] = "STRING"
+
+    if token[0] == "COMMENT"
+      token[2] = token[2].substr(1, token[2].length)
+
+    if token[0] == "CODE"
+      token[0] = token[2]
+
+    if Containers.indexOf(token[0]) < 0
+      token.length = 2
+
     # Strip out unwanted whitespace tokens
-    if token[0] != "WS"
-      if !(token[0] == "NEWLINE" && (!last || last[0] == "NEWLINE"))
-
-        # Look for reserved identifiers and mark them
-        if token[0] == "ID"
-          if Keywords.indexOf(token[2]) >= 0
-            token[0] = token[2]
-          else if (idx: Booleans.indexOf(token[2])) >= 0
-            token[0] = "BOOLEAN"
-            token[2] = idx % 2 == 0
-
-        # Convert strings to their raw value
-        if token[0] == "STRING"
-          token[2] =
-          token[2]: try
-            token[2] = JSON.parse(token[2].replace(/\n/g, "\\n"))
-          catch e
-
-            false
-
-        # Strip leading whitespace off heredoc blocks
-        if token[0] == "HEREDOC"
-          token[2] = strip_heredoc(token[2])
-          token[0] = "STRING"
-
-        if token[0] == "COMMENT"
-          token[2] = token[2].substr(1, token[2].length)
-
-        if token[0] == "CODE"
-          token[0] = token[2]
-        if Containers.indexOf(token[0]) < 0
-          token.length = 2
-
-        result.push(token)
-    last: token
+    result.push(token) if token[0] != "WS"
 
   # Flush the stack
   while stack.length > 1
-    result.push(["DEDENT", last[1], stack.pop()])
+    result.push(["DEDENT", [tokens.length, code.length], stack.pop()])
 
   result
 

@@ -3,9 +3,9 @@ CoffeePot: require('coffeepot').CoffeePot
 process.mixin(require('sys'))
 file: require('file')
 file.read("sample.coffee").addCallback() code =>
-  js: CoffeePot.compile(code)
-  # # puts("\nTokens:\n")
-  # # puts(inspect(tokens))
+  tokens: CoffeePot.tokenize(code)
+  puts("\nTokens:\n")
+  puts(inspect(tokens.map(token => token[0])))
   # try
   #   tree: CoffeePot.parse(tokens, code)
   #   try

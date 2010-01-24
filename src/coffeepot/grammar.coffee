@@ -63,7 +63,7 @@ grammar: {
 
   Array: [
     o("[ ArrayItems ]") => ["Array", $2]
-    o("[ NEWLINE INDENT ArrayItems NEWLINE DEDENT ]") => ["Array", $4]
+    o("[ INDENT ArrayItems NEWLINE DEDENT NEWLINE ]") => ["Array", $3]
   ]
 
   ArrayItems: [
@@ -74,7 +74,7 @@ grammar: {
 
   Object: [
     o("{ ObjectItems }") => ["Object", $2]
-    o("{ NEWLINE INDENT ObjectItems NEWLINE DEDENT }") => ["Object", $4]
+    o("{ INDENT ObjectItems NEWLINE DEDENT NEWLINE }") => ["Object", $3]
   ]
 
   ObjectItem: [
