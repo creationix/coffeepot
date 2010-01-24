@@ -12,7 +12,13 @@ sub_compile: expr =>
 Generators: {
 
   Root: block =>
-    "(function () {" + this(block) + "}());"
+    content: this(block)
+    names: name for name, exists of block_vars.pop()
+    if names.length > 0
+      content: "var " + names.join(", ") + ";\n" + content
+      content: "\n" + (("  " + line) for line in content.split("\n")).join("\n") + "\n"
+      content: "(function () {" + content + "}());"
+    content
 
   Not: expr =>
     "!(" + this(expr) + ")"
@@ -35,10 +41,6 @@ Generators: {
       last_comment: type == "COMMENT"
       content
     content: content.join("\n")
-    names: name for name, exists of block_vars.pop()
-    if names.length > 0
-      content: "var " + names.join(", ") + ";\n" + content
-    content: "\n" + (("  " + line) for line in content.split("\n")).join("\n") + "\n"
     content
 
   Property: source, id =>

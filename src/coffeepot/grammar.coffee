@@ -19,6 +19,7 @@ grammar: {
 
   Root: [
     o("Block") => ["Root", ["Block", $1]]
+    o("") => false
   ]
 
   Block: [

@@ -35,7 +35,7 @@
     if (timer) {
       clearTimeout(timer);
     }
-    return timer = setTimeout(compile, 1000);
+    return timer = setTimeout(compile, 500);
   };
   // Wait for the dom to be built before moving on.
   this.onload = function onload() {

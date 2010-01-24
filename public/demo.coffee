@@ -33,7 +33,7 @@ compile: =>
 timer: null
 onChange: e =>
   clearTimeout(timer) if timer
-  timer: setTimeout(compile, 1000)
+  timer: setTimeout(compile, 500)
 
 # Wait for the dom to be built before moving on.
 this.onload: =>
