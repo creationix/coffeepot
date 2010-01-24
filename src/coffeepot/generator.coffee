@@ -49,10 +49,18 @@ Generators: {
 
   Function: args, content, name =>
     name ?= ""
-    content: if content[0] == "Block"
-      this(content)
+    content: if content
+      if content[0] == "Block"
+        block_vars.push({})
+        content: this(content)
+        names: varname for varname, exists of block_vars.pop()
+        if names.length > 0
+          content: "var " + names.join(", ") + ";\n" + content
+        "\n" + (("  " + line) for line in content.split("\n")).join("\n") + "\n"
+      else
+        " return " + this(content) + "; "
     else
-      " return " + this(content) + "; "
+      ""
     "function " + name + "(" + (arg[1] for arg in args).join(", ") + ") {" + content + "}"
 
   COMMENT: content => "//" + content

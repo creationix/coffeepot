@@ -158,7 +158,7 @@ strip_heredoc: raw =>
 # Take a raw token stream and strip out unneeded whitespace tokens and insert
 # indent/dedent tokens. By using a stack of indentation levels, we can support
 # mixed spaces and tabs as long the programmer is consistent within blocks.
-analyse: tokens =>
+analyse: tokens, code =>
   result: []
   stack: [""]
   i: -1
@@ -230,7 +230,9 @@ analyse: tokens =>
 
   # Flush the stack
   while stack.length > 1
-    result.push(["DEDENT", [tokens.length, code.length], stack.pop()])
+    pos: [tokens.length, code.split("\n").length]
+    result.push(["DEDENT", pos, stack.pop()])
+    result.push(["NEWLINE", pos])
 
   result
 
@@ -245,4 +247,4 @@ CoffeePot.tokenize: source =>
     line_no: source.substr(0, pos).replace(/[^\n]/g, "").length
     tokens.push([type, [pos, line_no], match])
     pos += match.length
-  analyse(tokens)
+  analyse(tokens, source)

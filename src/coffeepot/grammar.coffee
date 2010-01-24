@@ -114,10 +114,16 @@ grammar: {
     o("Source [ Expression ]") => ["Property", $1, 3]
   ]
 
+  FunctionBody: [
+    o("Expression") => $1
+    o("INDENT Block DEDENT") => ["Block", $2]
+    o("") => false
+  ]
+
   Function: [
-    o("ROCKET Expression") => ["Function", [], $2]
-    o("Id ROCKET Expression") => ["Function", [$1], $3]
-    o("Id , Splat ROCKET Expression") => ["Function", [$1, $3], $5]
+    o("ROCKET FunctionBody") => ["Function", [], $2]
+    o("Id ROCKET FunctionBody") => ["Function", [$1], $3]
+    o("Id , Splat ROCKET FunctionBody") => ["Function", [$1, $3], $5]
   ]
 
   VarListItem: [
