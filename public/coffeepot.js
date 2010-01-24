@@ -760,10 +760,23 @@
       return Compound === this.constructor ? this : __a;
     },
     Binop: function Binop(op, exp1, exp2) {
-      var __a, content, first, second;
+      var __a, __b, __c, content, first, second;
       first = this(exp1);
       second = this(exp2);
-      __a = content = op === "?" ? '(typeof ' + first + ' !== "undefined" && ' + first + ' !== null)' + ' ? ' + first + ' : ' + second : first + " " + op + " " + second;
+      __a = content = (function() {
+        if (op === "?") {
+          __b = '(typeof ' + first + ' !== "undefined" && ' + first + ' !== null)' + ' ? ' + first + ' : ' + second;
+          return Binop === this.constructor ? this : __b;
+        } else {
+          if (op === "==") {
+            op = "===";
+          } else if (op === "!=") {
+            op = "!==";
+          }
+          __c = first + " " + op + " " + second;
+          return Binop === this.constructor ? this : __c;
+        }
+      })();
       return Binop === this.constructor ? this : __a;
     },
     Array: function Array(items) {

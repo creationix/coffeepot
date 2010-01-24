@@ -141,6 +141,8 @@ Generators: {
       '(typeof ' + first + ' !== "undefined" && ' + first + ' !== null)' +
       ' ? ' + first + ' : ' + second
     else
+      if op == "==" then op: "==="
+      else if op == "!=" then op: "!=="
       first + " " + op + " " + second
 
   Array: items =>
