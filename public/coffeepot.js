@@ -549,7 +549,7 @@
 // coffeepot/generator.coffee
 
 (function(){
-  var CoffeePot, Generators, block_vars, render, root, sub_compile;
+  var CoffeePot, Generators, block_indent, block_vars, render, root, sub_compile;
   var __hasProp = Object.prototype.hasOwnProperty;
   root = (typeof exports !== "undefined" && exports !== null) ? exports : this;
   CoffeePot = (root.CoffeePot = (typeof root.CoffeePot !== "undefined" && root.CoffeePot !== null) ? root.CoffeePot : {
@@ -557,6 +557,17 @@
   CoffeePot.tokenize = (typeof CoffeePot.tokenize !== "undefined" && CoffeePot.tokenize !== null) ? CoffeePot.tokenize : require('coffeepot/lexer').CoffeePot.tokenize;
   CoffeePot.parse = (typeof CoffeePot.parse !== "undefined" && CoffeePot.parse !== null) ? CoffeePot.parse : require('coffeepot/parser').CoffeePot.parse;
   block_vars = [];
+  block_indent = function block_indent(text) {
+    var __a, __b, __c, line;
+    return ((function() {
+      __a = []; __b = text.split("\n");
+      for (__c = 0; __c < __b.length; __c++) {
+        line = __b[__c];
+        __a.push(("  " + line));
+      }
+      return __a;
+    })()).join("\n");
+  };
   sub_compile = function sub_compile(expr) {
     var tokens, tree;
     tokens = CoffeePot.tokenize(expr);
@@ -565,7 +576,7 @@
   };
   Generators = {
     Root: function Root(block) {
-      var __a, __b, __c, __d, __e, __f, content, exists, line, name, names;
+      var __a, __b, __c, content, exists, name, names;
       content = this(block);
       names = (function() {
         __a = []; __b = block_vars.pop();
@@ -579,18 +590,11 @@
       })();
       if (names.length > 0) {
         content = "var " + names.join(", ") + ";\n" + content;
-        content = "\n" + ((function() {
-          __c = []; __d = content.split("\n");
-          for (__e = 0; __e < __d.length; __e++) {
-            line = __d[__e];
-            __c.push(("  " + line));
-          }
-          return __c;
-        })()).join("\n") + "\n";
+        content = "\n" + block_indent(content) + "\n";
         content = "(function () {" + content + "}());";
       }
-      __f = content;
-      return Root === this.constructor ? this : __f;
+      __c = content;
+      return Root === this.constructor ? this : __c;
     },
     Not: function Not(expr) {
       var __a;
@@ -629,7 +633,7 @@
       return Property === this.constructor ? this : __a;
     },
     Function: function Function(args, content, name) {
-      var __a, __b, __c, __d, __e, __f, __g, __h, __i, __j, __k, __l, arg, exists, line, names, varname;
+      var __a, __b, __c, __d, __e, __f, __g, __h, __i, arg, exists, names, varname;
       name = (typeof name !== "undefined" && name !== null) ? name : "";
       content = (function(__this) {
         if (content) {
@@ -648,33 +652,26 @@
               return __a;
             })();
             names.length > 0 ? (content = "var " + names.join(", ") + ";\n" + content) : null;
-            __c = "\n" + ((function() {
-              __d = []; __e = content.split("\n");
-              for (__f = 0; __f < __e.length; __f++) {
-                line = __e[__f];
-                __d.push(("  " + line));
-              }
-              return __d;
-            })()).join("\n") + "\n";
+            __c = "\n" + block_indent(content) + "\n";
             return Function === this.constructor ? this : __c;
           } else {
-            __g = " return " + __this(content) + "; ";
-            return Function === this.constructor ? this : __g;
+            __d = " return " + __this(content) + "; ";
+            return Function === this.constructor ? this : __d;
           }
         } else {
-          __h = "";
-          return Function === this.constructor ? this : __h;
+          __e = "";
+          return Function === this.constructor ? this : __e;
         }
       })(this);
-      __i = "function " + name + "(" + ((function() {
-        __j = []; __k = args;
-        for (__l = 0; __l < __k.length; __l++) {
-          arg = __k[__l];
-          __j.push(arg[1]);
+      __f = "function " + name + "(" + ((function() {
+        __g = []; __h = args;
+        for (__i = 0; __i < __h.length; __i++) {
+          arg = __h[__i];
+          __g.push(arg[1]);
         }
-        return __j;
+        return __g;
       })()).join(", ") + ") {" + content + "}";
-      return Function === this.constructor ? this : __i;
+      return Function === this.constructor ? this : __f;
     },
     COMMENT: function COMMENT(content) {
       var __a;
@@ -845,7 +842,7 @@
         }
         return __a;
       })();
-      __d = "{\n  " + pairs.join(",\n  ") + "\n}";
+      __d = "{\n" + block_indent(pairs.join(",\n")) + "\n}";
       return Object === this.constructor ? this : __d;
     }
   };

@@ -4,6 +4,9 @@ CoffeePot.tokenize ?= require('coffeepot/lexer').CoffeePot.tokenize
 CoffeePot.parse ?= require('coffeepot/parser').CoffeePot.parse
 block_vars: []
 
+block_indent: text =>
+  (("  " + line) for line in text.split("\n")).join("\n")
+
 sub_compile: expr =>
   tokens: CoffeePot.tokenize(expr)
   tree: CoffeePot.parse(tokens)[1][1][0]
@@ -16,7 +19,7 @@ Generators: {
     names: name for name, exists of block_vars.pop()
     if names.length > 0
       content: "var " + names.join(", ") + ";\n" + content
-      content: "\n" + (("  " + line) for line in content.split("\n")).join("\n") + "\n"
+      content: "\n" + block_indent(content) + "\n"
       content: "(function () {" + content + "}());"
     content
 
@@ -56,7 +59,7 @@ Generators: {
         names: varname for varname, exists of block_vars.pop()
         if names.length > 0
           content: "var " + names.join(", ") + ";\n" + content
-        "\n" + (("  " + line) for line in content.split("\n")).join("\n") + "\n"
+        "\n" + block_indent(content) + "\n"
       else
         " return " + this(content) + "; "
     else
@@ -160,7 +163,7 @@ Generators: {
   Object: items =>
     self: this
     pairs: (self(item[0]) + ": " + self(item[1])) for item in items
-    "{\n  " + pairs.join(",\n  ") + "\n}"
+    "{\n" + block_indent(pairs.join(",\n")) + "\n}"
 }
 
 
