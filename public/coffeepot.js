@@ -234,7 +234,7 @@
     }
     // Flush the stack
     while (stack.length > 1) {
-      result.push(["DEDENT", stack.pop()]);
+      result.push(["DEDENT", last[1], stack.pop()]);
     }
     return result;
   };
@@ -250,8 +250,7 @@
       type = __a[0];
       match = __a[1];
       consume = __a[2];
-      // line_no: source.substr(0, pos).match(/\n/).length
-      line_no = null;
+      line_no = source.substr(0, pos).replace(/[^\n]/g, "").length;
       tokens.push([type, [pos, line_no], match]);
       pos += match.length;
     }
@@ -496,7 +495,7 @@
         var token;
         token = this.tokens[this.pos] || [""];
         this.pos++;
-        // this.yyline = token[1][1]
+        this.yylineno = token && token[1] && token[1][1];
         this.yytext = token[2];
         return token[0];
       },
@@ -517,10 +516,8 @@
       root = (typeof exports !== "undefined" && exports !== null) ? exports : this;
       CoffeePot = (root.CoffeePot = (typeof root.CoffeePot !== "undefined" && root.CoffeePot !== null) ? root.CoffeePot : {
       });
-      CoffeePot.parse = function parse() {
-        var args;
-        args = Array.prototype.slice.call(arguments, 0);
-        return parser.parse.apply(parser, args);
+      CoffeePot.parse = function parse(tokens) {
+        return parser.parse(tokens);
       };
       // Define Object.keys for browsers that don't have it.
       if (!((typeof Object.keys !== "undefined" && Object.keys !== null))) {
@@ -835,9 +832,35 @@
   CoffeePot.parse = (typeof CoffeePot.parse !== "undefined" && CoffeePot.parse !== null) ? CoffeePot.parse : require('coffeepot/parser').CoffeePot.parse;
   CoffeePot.generate = (typeof CoffeePot.generate !== "undefined" && CoffeePot.generate !== null) ? CoffeePot.generate : require('coffeepot/generator').CoffeePot.generate;
   CoffeePot.compile = function compile(code) {
-    var tokens, tree;
+    var __a, after, before, line_no, message, num, token, token_after, token_before, tokens, tree;
     tokens = CoffeePot.tokenize(code);
-    tree = CoffeePot.parse(tokens);
+    try {
+      tree = CoffeePot.parse(tokens);
+    } catch (e) {
+      __a = e.message.split("\n");
+      message = __a[0];
+      num = __a[1];
+      num = parseInt(num) - 1;
+      if ((token = tokens[num])) {
+        line_no = token[1] && (token[1][1] + 1);
+        before = code.substr(0, token[1][0]).match(/\n?.*$/)[0];
+        after = code.substr(token[1][0], code.length).match(/^.*\n?/)[0];
+        token_before = tokens.slice(0, num).filter(function(token) {
+          return token[1][1] === line_no - 1;
+        });
+        token_before = token_before.map(function(token) {
+          return token[0];
+        });
+        token_after = tokens.slice(num, tokens.length).filter(function(token) {
+          return token[1][1] === line_no - 1;
+        });
+        token_after = token_after.map(function(token) {
+          return token[0];
+        });
+        e.message = message + "\n" + "but found '" + token[0] + "'\n" + "Line " + line_no + ": " + JSON.stringify(before) + " !! " + JSON.stringify(after) + "'\n" + "Tokens " + JSON.stringify(token_before) + " !! " + JSON.stringify(token_after);
+      }
+      throw e;
+    }
     return CoffeePot.generate(tree);
   };
 })();

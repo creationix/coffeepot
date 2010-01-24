@@ -229,7 +229,7 @@ analyse: tokens =>
 
   # Flush the stack
   while stack.length > 1
-    result.push(["DEDENT", stack.pop()])
+    result.push(["DEDENT", last[1], stack.pop()])
 
   result
 
@@ -241,8 +241,7 @@ CoffeePot.tokenize: source =>
   tokens: []
   while pos < length
     [type, match, consume] = match_token(source.substr(pos, length))
-    # line_no: source.substr(0, pos).match(/\n/).length
-    line_no: null
+    line_no: source.substr(0, pos).replace(/[^\n]/g, "").length
     tokens.push([type, [pos, line_no], match])
     pos += match.length
   analyse(tokens)

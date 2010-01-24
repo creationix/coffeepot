@@ -159,7 +159,7 @@ parser.lexer: {
   lex: =>
     token: this.tokens[this.pos] || [""]
     this.pos++
-    # this.yyline = token[1][1]
+    this.yylineno = token and token[1] and token[1][1]
     this.yytext = token[2]
     token[0]
   setInput: tokens =>
@@ -169,24 +169,8 @@ parser.lexer: {
   showPosition: => this.pos
 }
 
-# Parse function with nice error reporting
-parse: tokens, code =>
-  try
-    parser.parse(tokens)
-  catch e
-    [message, num] = e.message.split("\n")
-    token: tokens[num[0] - 1]
-    before: code.substr(0, token[1]).split("\n")
-    line_no: before.length
-    before: before[line_no - 1]
-    after: code.substr(token[1], code.length).split("\n")[0]
-    e.message: message + "\n" +
-      "Line " + line_no + ": " + inspect(before) + " !! " + inspect(after) + "\n" +
-      "Token " + num + ": " + JSON.stringify(tokens[num - 1])
-    throw e
-
-CoffeePot.parse: args... =>
-  parser.parse(args...)
+CoffeePot.parse: tokens =>
+  parser.parse(tokens)
 
 CoffeePot.generate_parser: =>
 
@@ -202,8 +186,8 @@ CoffeePot.generate_parser: =>
   footer: =>
     root: exports ? this
     CoffeePot: (root.CoffeePot ?= {})
-    CoffeePot.parse: args... =>
-      parser.parse(args...)
+    CoffeePot.parse: tokens =>
+      parser.parse(tokens)
     # Define Object.keys for browsers that don't have it.
     Object.keys: (obj => key for key, value of obj) unless Object.keys?
 

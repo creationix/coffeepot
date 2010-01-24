@@ -17,7 +17,6 @@ real_compile: =>
     js: CoffeePot.compile(code)
     setOutput(js)
     sh_highlightDocument()
-    source.focus()
   catch e
     setOutput(e.stack)
   status.style.display = "none";
@@ -50,6 +49,7 @@ this.onload: =>
   # Fill in the box with the input and call compile
   source.value = sample
   compile()
+  source.focus()
 
   # Bind onkeyup and onchange in the text field
   source.addEventListener('keyup', onChange, false)
