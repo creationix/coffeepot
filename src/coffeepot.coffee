@@ -15,9 +15,9 @@ CoffeePot.compile: code =>
       line_no: token[1] and (token[1][1] + 1)
       before: code.substr(0, token[1][0]).match(/\n?.*$/)[0]
       after: code.substr(token[1][0], code.length).match(/^.*\n?/)[0]
-      token_before: tokens.slice(0, num).filter() token => token[1][1] == line_no - 1
+      token_before: tokens.slice(0, num).filter() token => token[1] && (token[1][1] == line_no - 1)
       token_before: token_before.map() token => token[0]
-      token_after: tokens.slice(num, tokens.length).filter() token => token[1][1] == line_no - 1
+      token_after: tokens.slice(num, tokens.length).filter() token => token[1] && (token[1][1] == line_no - 1)
       token_after: token_after.map() token => token[0]
       e.message: message + "\n" +
         "but found '" + token[0] + "'\n" +
