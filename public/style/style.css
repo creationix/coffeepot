@@ -7,7 +7,9 @@ body, html {
   border: 0;
   padding: 0;
   margin: 0;
-
+}
+p {
+  margin: 10px 25px;
 }
 body, .code, #source {
   font-family: AnigmaScrawl;
@@ -51,7 +53,7 @@ label {
   box-shadow:0 0 20px #4af;
   -webkit-box-shadow:0 0 20px #4af;
   -moz-box-shadow:0 0 20px #44aaff;
-  top: 100px;
+  top: 150px;
   bottom: 20px;
   padding: 10px;
   white-space: pre;
@@ -100,6 +102,15 @@ label {
   line-height: 1.5em;
   padding: 0;
 }
+p a, p a:link p a:active p a:visited {
+  color: #29f;
+  text-decoration: none;
+}
+p a:hover {
+  color: #5af;
+  text-decoration: underline;
+}
+
 #nav a, #nav a:link #nav a:active #nac a:visited {
   display: block;
   text-decoration: none;
