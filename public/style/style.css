@@ -7,19 +7,21 @@ body, html {
   border: 0;
   padding: 0;
   margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  background: #333028;
 }
 p {
   margin: 10px 25px;
 }
-body, .code, #source {
-  font-family: AnigmaScrawl;
-  background: #333028;
+.code, #source {
+  font-family: Monaco, AnigmaScrawl;
 }
 body, #source {
   color: #fff4ef;
 }
 
 h1 {
+  font-family: AnigmaScrawl;
   font-size: 38px;
   line-height: 38px;
   font-weight: bold;
@@ -29,6 +31,7 @@ h1 {
   margin: 15px 0 10px 0;
 }
 h2 {
+  font-family: AnigmaScrawl;
   font-size: 26px;
   line-height: 26px;
   font-weight: normal;
@@ -44,7 +47,7 @@ label {
 }
 
 .code, #source {
-  font-size: 24px;
+  font-size: 16px;
   position: absolute;
   border: 0;
   border-radius:10px; -moz-border-radius:10px; -webkit-border-radius:10px;
@@ -112,6 +115,7 @@ p a:hover {
 }
 
 #nav a, #nav a:link #nav a:active #nac a:visited {
+  font-family: AnigmaScrawl;
   display: block;
   text-decoration: none;
   color: #888;
@@ -126,7 +130,7 @@ p a:hover {
   position: absolute;
   right: 25%;
   margin-right: -100px;
-  top: 50px;
+  top: 100px;
   background-color: #333;
   color: #4f4;
   font-weight: bold;
