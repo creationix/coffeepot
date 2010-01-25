@@ -14,7 +14,7 @@ p {
   margin: 10px 25px;
 }
 .code, #source {
-  font-family: Monaco, AnigmaScrawl;
+  font-family: Monaco, Consolas, "Lucida Console", monospace;
 }
 body, #source {
   color: #fff4ef;
