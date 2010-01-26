@@ -4,17 +4,17 @@ CoffeePot.tokenize ?= require('coffeepot/lexer').CoffeePot.tokenize
 CoffeePot.parse ?= require('coffeepot/parser').CoffeePot.parse
 block_vars: []
 
-block_indent: text =>
+block_indent: (text) ->
   (("  " + line) for line in text.split("\n")).join("\n")
 
-sub_compile: expr =>
+sub_compile: (expr) ->
   tokens: CoffeePot.tokenize(expr)
   tree: CoffeePot.parse(tokens)[1][1][0]
   render(tree)
 
 Generators: {
 
-  Root: block =>
+  Root: (block) ->
     content: this(block)
     names: name for name, exists of block_vars.pop()
     if names.length > 0
@@ -23,14 +23,14 @@ Generators: {
       content: "(function () {" + content + "}());"
     content
 
-  Not: expr =>
+  Not: (expr) ->
     "!(" + this(expr) + ")"
 
-  Block: contents =>
+  Block: (contents) ->
     self: this
     block_vars.push({})
     last_comment: false
-    content: contents.map() statement =>
+    content: contents.map (statement) ->
       type: statement[0]
       content: self(statement)
 
@@ -46,11 +46,11 @@ Generators: {
     content: content.join("\n")
     content
 
-  Property: source, id =>
+  Property: (source, id) ->
     this(source) + "." + this(id)
 
 
-  Function: args, content, name =>
+  Function: (args, content, name) ->
     name ?= ""
     content: if content
       if content[0] == "Block"
@@ -66,8 +66,8 @@ Generators: {
       ""
     "function " + name + "(" + (arg[1] for arg in args).join(", ") + ") {" + content + "}"
 
-  COMMENT: content => "//" + content
-  STRING: content =>
+  COMMENT: (content) -> "//" + content
+  STRING: (content) ->
     if content.match(/[^\\]?#{.*[^\\]}/)
       output: []
       pos: 0
@@ -113,10 +113,10 @@ Generators: {
     else
       JSON.stringify(content)
 
-  If: condition, exp1, exp2 =>
+  If: (condition, exp1, exp2) ->
     "if (" + this(condition) + ") { " + this(exp1) + "; }"
 
-  Assign: id, exp =>
+  Assign: (id, exp) ->
     if id[0] == "ID"
       name: id[1]
       if exp[0] == "Function"
@@ -124,28 +124,28 @@ Generators: {
       block_vars[block_vars.length - 1][name] = true
     this(id) + " = " + this(exp)
 
-  Source: parts =>
+  Source: (parts) ->
     (part[1] for part in parts).join("")
 
-  Call: target, message, args =>
+  Call: (target, message, args) ->
     self: this
-    args: args.map() arg => self(arg)
+    args: args.map (arg) -> self(arg)
     call: this(message) + "(" + args.join(", ") + ")"
     if target
       this(target) + "." + call
     else
       call
 
-  ExpressionList: items =>
+  ExpressionList: (items) ->
     self: this
     (self(item) for item in items).join(", ")
 
 
-  Compound: parts =>
+  Compound: (parts) ->
     self: this
     (this(part) for part in parts).join("")
 
-  Binop: op, exp1, exp2 =>
+  Binop: (op, exp1, exp2) ->
     first: this(exp1)
     second: this(exp2)
     content: if op == "?"
@@ -156,18 +156,18 @@ Generators: {
       else if op == "!=" then op: "!=="
       first + " " + op + " " + second
 
-  Array: items =>
+  Array: (items) ->
     self: this
     "[" + (self(item) for item in items).join(", ") + "]"
 
-  Object: items =>
+  Object: (items) ->
     self: this
     pairs: (self(item[0]) + ": " + self(item[1])) for item in items
     "{\n" + block_indent(pairs.join(",\n")) + "\n}"
 }
 
 
-render: node =>
+render: (node) ->
   return "" unless node
   [name, args...] = node
   if Generators[name]

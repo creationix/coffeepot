@@ -38,20 +38,20 @@ Tokens: {
   WS: /^([ \t]+)/
   COMMENT: /^(#.*)\n?/
   ID: /^([a-z_$][a-z0-9_$]*)/i
-  ROCKET: /^(=>)/
+  ARROW: /^(->)/
   OPERATOR: /^([+\*&|\/\-%=<>!?]+)/
   DOTDOTDOT: /^(\.\.\.)/
   DOTDOT: /^(\.\.)/
 
   # A little cheating to keep from having to write a proper number parser
-  NUMBER: code =>
+  NUMBER: (code) ->
     if !code[0].match(/[0-9.-]/)
       return null
     if not isNaN(num: parseInt(code) || parseFloat(code))
       {"1": num + ""}
 
   # Embedded raw JavaScript
-  JS: code =>
+  JS: (code) ->
     if code[0] != "`"
       return null
     pos: 1
@@ -69,7 +69,7 @@ Tokens: {
       {"1":code.substr(0, pos)}
 
   # Parse heredoc strings using a simple state machine
-  HEREDOC: code =>
+  HEREDOC: (code) ->
     if !(slice: code.match(/^("""|''')\n/))
       return null
     slice: slice[1]
@@ -87,7 +87,7 @@ Tokens: {
       {"1":code.substr(0, pos)}
 
   # Parse strings using a simple state machine
-  STRING: code =>
+  STRING: (code) ->
     quote: code[0]
     return null unless quote == "\"" or quote == "\'"
     pos: 1
@@ -105,7 +105,7 @@ Tokens: {
       {"1":code.substr(0, pos)}
 
   # Same story as strings, but even more evil!
-  REGEX: code =>
+  REGEX: (code) ->
     start: code[0]
     return null unless code[0] == "\/"
     pos: 1
@@ -127,7 +127,7 @@ Tokens: {
 tokens: []
 
 # Trims leading whitespace from a block of text
-block_trim: text =>
+block_trim: (text) ->
   lines: text.split("\n")
   min: null
   for line in lines
@@ -135,12 +135,12 @@ block_trim: text =>
     indent: match[1].length
     if min == null or indent < min
       min: indent
-  lines: lines.map() line =>
+  lines: lines.map (line) ->
     line.substr(min, line.length)
   lines.join("\n")
 
 # Does a simple longest match algorithm
-match_token: code =>
+match_token: (code) ->
   result: null
   for name, matcher of Tokens
     if (match: matcher(code))
@@ -152,13 +152,13 @@ match_token: code =>
     debug(inspect(tokens))
     throw new Error("Unknown Token: " + JSON.stringify(code.split("\n")[0]))
 
-strip_heredoc: raw =>
+strip_heredoc: (raw) ->
   lines: Helper.block_trim(raw.substr(4, raw.length - 7))
 
 # Take a raw token stream and strip out unneeded whitespace tokens and insert
 # indent/dedent tokens. By using a stack of indentation levels, we can support
 # mixed spaces and tabs as long the programmer is consistent within blocks.
-analyse: tokens, code =>
+analyse: (tokens, code) ->
   result: []
   stack: [""]
   i: -1
@@ -237,7 +237,7 @@ analyse: tokens, code =>
   result
 
 # Turns a long string into a stream of tokens
-CoffeePot.tokenize: source =>
+CoffeePot.tokenize: (source) ->
   source += "\n"
   length: source.length
   pos: 0
