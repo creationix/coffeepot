@@ -30,19 +30,19 @@ grammar: {
   Statement: [
     o "Expression if Expression", -> ["If", $3, $1]
     o "Expression unless Expression", -> ["If", ["Not", $3], $1]
-    o("Expression")
+    o "Expression"
     o "COMMENT", -> ["COMMENT", yytext]
   ]
 
   Expression: [
-    o("Literal")
-    o("Source")
-    o("Assign")
-    o("Function")
-    o("Binop")
-    o("Array")
-    o("Object")
-    o("Call")
+    o "Literal"
+    o "Source"
+    o "Assign"
+    o "Function"
+    o "Binop"
+    o "Array"
+    o "Object"
+    o "Call"
   ]
 
   Call: [
@@ -50,15 +50,15 @@ grammar: {
     o "Expression . Id CallArgs", -> ["Call", $1, $3, $4]
   ]
 
-  CallArgs: [
-    o "( )", -> []
-    o "( Expressionlist )", -> $2
-    o "Expressionlist", -> $1
-  ]
-
   ExpressionList: [
     o "Expression", -> [$1]
-    o "ExpressionList , Expression", -> $1.concat([$3])
+    # o "ExpressionList , Expression", -> $1.concat([$3])
+  ]
+
+  CallArgs: [
+    o "( )", -> []
+    o "( ExpressionList )", -> $2
+    o "ExpressionList", -> $1
   ]
 
   Binop: [
@@ -113,7 +113,7 @@ grammar: {
   ]
 
   Source: [
-    o("Id")
+    o "Id"
     o "Source . Id", -> ["Property", $1, $3]
     o "Source [ Expression ]", -> ["Property", $1, 3]
   ]
@@ -130,8 +130,8 @@ grammar: {
   ]
 
   VarListItem: [
-    o("Id")
-    o("Splat")
+    o "Id"
+    o "Splat"
   ]
 
   VarList: [
