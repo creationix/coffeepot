@@ -52,12 +52,11 @@ grammar: {
 
   ExpressionList: [
     o "Expression", -> [$1]
-    # o "ExpressionList , Expression", -> $1.concat([$3])
+    o "ExpressionList , Expression", -> $1.concat([$3])
   ]
 
   CallArgs: [
     o "( )", -> []
-    o "( ExpressionList )", -> $2
     o "ExpressionList", -> $1
   ]
 
