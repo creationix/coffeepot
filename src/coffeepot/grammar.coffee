@@ -49,7 +49,9 @@ grammar: {
     o("Id ( )") => ["Call", null, $1, []]
     o("Expression . Id ( )") => ["Call", $1, $3, []]
     o("Id ( ExpressionList )") => ["Call", null, $1, $3]
+    o("Id ExpressionList") => ["Call", null, $1, $2]
     o("Expression . Id ( ExpressionList )") => ["Call", $1, $3, $5]
+    o("Expression . Id ExpressionList") => ["Call", $1, $3, $4]
   ]
 
   ExpressionList: [
