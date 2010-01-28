@@ -42,85 +42,11 @@ Tokens: {
   OPERATOR: /^([+\*&|\/\-%=<>!?]+)/
   DOTDOTDOT: /^(\.\.\.)/
   DOTDOT: /^(\.\.)/
-
-  # A little cheating to keep from having to write a proper number parser
-  NUMBER: (code) ->
-    if !code[0].match(/[0-9.-]/)
-      return null
-    if not isNaN(num: parseInt(code) || parseFloat(code))
-      {"1": num + ""}
-
-  # Embedded raw JavaScript
-  JS: (code) ->
-    if code[0] != "`"
-      return null
-    pos: 1
-    len: code.length + 1
-    done: false
-    while not done and pos < len
-      if code[pos] == "`"
-        done: true
-      if code[pos] == "\\"
-        pos++
-      pos++
-    if pos >= len
-      null
-    else
-      {"1":code.substr(0, pos)}
-
-  # Parse heredoc strings using a simple state machine
-  HEREDOC: (code) ->
-    if !(slice: code.match(/^("""|''')\n/))
-      return null
-    slice: slice[1]
-    pos: 3
-    len: code.length + 1
-    done: false
-    while not done and pos < len
-      if code.substr(pos, 3) == slice
-        done: true
-        pos += 2
-      pos++
-    if pos >= len
-      null
-    else
-      {"1":code.substr(0, pos)}
-
-  # Parse strings using a simple state machine
-  STRING: (code) ->
-    quote: code[0]
-    return null unless quote == "\"" or quote == "\'"
-    pos: 1
-    len: code.length + 1
-    done: false
-    while not done and pos < len
-      if code[pos] == quote
-        done: true
-      if code[pos] == "\\"
-        pos++
-      pos++
-    if pos >= len
-      null
-    else
-      {"1":code.substr(0, pos)}
-
-  # Same story as strings, but even more evil!
-  REGEX: (code) ->
-    start: code[0]
-    return null unless code[0] == "\/"
-    pos: 1
-    len: code.length + 1
-    done: false
-    while not done and pos < len
-      try
-        eval(code.substr(0, pos))
-        done: true
-      catch e
-        pos++
-    if pos >= len
-      null
-    else
-      {"1":code.substr(0, pos)}
+  NUMBER: /^(0x[0-9a-f]+|-?(0|[1-9][0-9]*)(\.[0-9]+)?(e[+\-]?[0-9]+)?)\b/i
+  JS: /^(`(\\.|[^`])*`)/
+  HEREDOC: /^((['"]){3}\n(?:[^\2]|\2[^\2]|\2\2[^2]|\\\2)*\n[ \t]*\2{3})/,
+  STRING: /^((['"])(\\.|[^\2])*\2)/
+  REGEX: /^(\/(?:\\\/|[^\/])*\/[img]*)/
 
 }
 
